@@ -6,7 +6,6 @@
 		public IConfiguration Configuration { get; }
 
 		public void ConfigureServices(IServiceCollection services) {
-
 			services.AddControllersWithViews();
 		}
 
@@ -16,9 +15,13 @@
 
 			app.UseEndpoints(endpoints => {
 				endpoints.MapControllerRoute(
-				name: "default",
-				pattern: "{controller=Home}/{action=Index}/{id?}");
+					name: "default",
+					pattern: "{controller=Home}/{action=Index}/{id?}");
 			});
+
+			app.UseExceptionHandler("/Home/Error");
+			app.UseHsts();
+
 		}
 	}
 }
