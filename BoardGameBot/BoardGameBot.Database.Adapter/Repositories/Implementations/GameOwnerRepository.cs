@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 
 using Models = BoardGameBot.Models;
 
-
 namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 {
 	public class GameOwnerRepository: IGameOwnerRepository
@@ -52,7 +51,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			await _boardGameContext.SaveChangesAsync();
 		}
 
-		public async Task<List<Models.GameOwner>> GetAllGameOwner()
+		public async Task<List<Models.GameOwner>> GetAllGameOwners()
 		{
 			var gameOwnerList = _boardGameContext
 				.GameOwners.Include(q => q.Games)

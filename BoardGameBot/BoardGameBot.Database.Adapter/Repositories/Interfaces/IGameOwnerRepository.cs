@@ -8,6 +8,6 @@ namespace BoardGameBot.Database.Adapter.Repositories.Interfaces
 		public Task CreateGameOwner(GameOwner gameOwner);
 		public Task<GameOwner> GetGameOwner(long id);
 		public Task EditGameOwner(GameOwner gameOwner);
-		public Task<List<GameOwner>> GetAllGameOwner();
+		public Task<List<GameOwner>> GetAllGameOwners();
 	}
 }

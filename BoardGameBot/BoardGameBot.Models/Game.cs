@@ -2,8 +2,15 @@
 {
 	public class Game
 	{
-		public Game() { }
-		public Game(int id, string title, string description, string players, string genre, int complexity, string letsPlay, string rules, int played, ICollection<GameOwner> gameOwners)
+		public Game()
+		{
+		}
+
+		public Game(
+			int id, string title, string description, string players,
+			string genre, int complexity, string letsPlay, string rules,
+			int played, ICollection<GameOwner> gameOwners
+		)
 		{
 			Id = id;
 			Title = title;

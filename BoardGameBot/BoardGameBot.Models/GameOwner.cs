@@ -2,7 +2,9 @@
 {
 	public class GameOwner
 	{
-		public GameOwner() { }
+		public GameOwner()
+		{
+		}
 
 		public GameOwner(long id, string name, string tGRef, ICollection<Game> games)
 		{

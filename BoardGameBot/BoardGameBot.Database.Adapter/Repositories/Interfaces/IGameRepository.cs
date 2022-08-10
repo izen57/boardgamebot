@@ -6,6 +6,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Interfaces
 	{
 		public Task<long> CreateGame(Game game);
 		public Task<Game> GetGame(long id);
-		public Task<long> UpdateGame(Game game);
+		public Task<long> EditGame(Game commonGame);
+		public Task<List<Game>> GetAllGames();
 	}
 }
