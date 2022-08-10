@@ -5,7 +5,9 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoardGameBot", "BoardGameBot\BoardGameBot.csproj", "{D1B0648F-F03F-41AD-9D4E-D02CBF7D27D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameBot.Core", "BoardGameBot.Core\BoardGameBot.Core.csproj", "{55EE73A1-A510-4310-B739-A4D3F23E5A9B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoardGameBot.Core", "BoardGameBot.Core\BoardGameBot.Core.csproj", "{55EE73A1-A510-4310-B739-A4D3F23E5A9B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameBot.Database.PostgreSQL", "BoardGameBot.Database.PostgreSQL\BoardGameBot.Database.PostgreSQL.csproj", "{BCF6A4B9-0198-4408-A143-AC87E0C512C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{55EE73A1-A510-4310-B739-A4D3F23E5A9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55EE73A1-A510-4310-B739-A4D3F23E5A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55EE73A1-A510-4310-B739-A4D3F23E5A9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCF6A4B9-0198-4408-A143-AC87E0C512C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCF6A4B9-0198-4408-A143-AC87E0C512C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCF6A4B9-0198-4408-A143-AC87E0C512C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCF6A4B9-0198-4408-A143-AC87E0C512C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

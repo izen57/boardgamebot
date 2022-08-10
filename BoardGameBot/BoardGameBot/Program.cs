@@ -14,7 +14,7 @@ namespace BoardGameBot {
 				.Build();
 
 			return Host.CreateDefaultBuilder(args).ConfigureWebHostDefaults(webBuilder => {
-				webBuilder.UseUrls($"http://0.0.0.0:{config.GetValue<int>("Port")}");
+				webBuilder.UseUrls($"http://localhost:{config.GetValue<int>("Port")}");
 				webBuilder.UseStartup<Startup>();
 				webBuilder.UseKestrel();
 				webBuilder.UseNLog();
