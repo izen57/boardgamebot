@@ -3,9 +3,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace BoardGameBot.Database.PostgreSQL.Configurations {
-	public class GameOwnerConfiguration : IEntityTypeConfiguration<GameOwner> {
-		public void Configure(EntityTypeBuilder<GameOwner> builder) {
+namespace BoardGameBot.Database.PostgreSQL.Configurations
+{
+	public class GameOwnerConfiguration: IEntityTypeConfiguration<GameOwner>
+	{
+		public void Configure(EntityTypeBuilder<GameOwner> builder)
+		{
 			builder.HasIndex(owner => owner.Id).IsUnique();
 			builder.HasKey(owner => owner.Id);
 			builder.Property(owner => owner.Id).IsRequired();

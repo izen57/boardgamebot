@@ -1,6 +1,9 @@
-﻿namespace BoardGameBot.Database.PostgreSQL.Models {
-	public class GameOwner {
-		public GameOwner() {
+﻿namespace BoardGameBot.Database.PostgreSQL.Models
+{
+	public class GameOwner
+	{
+		public GameOwner()
+		{
 			Games = new HashSet<Game>();
 		}
 
