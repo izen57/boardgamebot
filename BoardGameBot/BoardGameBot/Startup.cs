@@ -1,8 +1,11 @@
-﻿using BoardGameBot.Database.Adapter.Converts;
+﻿using BoardGameBot.Core;
+using BoardGameBot.Database.Adapter.Converts;
 using BoardGameBot.Database.Adapter.Extensions;
 using BoardGameBot.Database.PostgreSQL;
 
 using Microsoft.EntityFrameworkCore;
+
+using TelegramBotService.Extensions;
 
 namespace BoardGameBot
 {
@@ -25,6 +28,8 @@ namespace BoardGameBot
 				c.AddProfile<GameBoardAutoMapperProfile>(), typeof(Startup)
 			);
 			services.AddRepositories();
+			services.AddTelegramBotService(Configuration);
+			services.AddHostedService<CoreService>();
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

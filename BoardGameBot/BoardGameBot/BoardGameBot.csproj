@@ -14,12 +14,15 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.1.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BoardGameBot.Core\BoardGameBot.Core.csproj" />
     <ProjectReference Include="..\BoardGameBot.Database.Adapter\BoardGameBot.Database.Adapter.csproj" />
     <ProjectReference Include="..\BoardGameBot.Database.PostgreSQL\BoardGameBot.Database.PostgreSQL.csproj" />
+    <ProjectReference Include="..\Services\TelegramBotService\TelegramBotService.csproj" />
   </ItemGroup>
 
   <ItemGroup>
