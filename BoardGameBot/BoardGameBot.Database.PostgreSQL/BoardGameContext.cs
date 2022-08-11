@@ -9,6 +9,8 @@ namespace BoardGameBot.Database.PostgreSQL
 	{
 		public DbSet<Game> Games { get; set; }
 		public DbSet<GameOwner> GameOwners { get; set; }
+		public DbSet<Group> Groups { get; set; }
+		public DbSet<Poll> Polls { get; set; }
 
 		public BoardGameContext(DbContextOptions<BoardGameContext> options) : base(options)
 		{

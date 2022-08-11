@@ -49,7 +49,6 @@ namespace TelegramBotService
 				ThrowPendingUpdates = true
 			};
 			using var cts = new CancellationTokenSource();
-
 			var updateHadler = new UpdateHadler();
 			bot.StartReceiving(
 				updateHandler: updateHadler.HandleUpdateAsync,

@@ -6,7 +6,7 @@ using BoardGameBot.Database.PostgreSQL.Models;
 
 using Microsoft.EntityFrameworkCore;
 
-using Models = BoardGameBot.Models;
+using CommonModels = BoardGameBot.Models;
 
 namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 {
@@ -21,22 +21,22 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			_mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 		}
 
-		public async Task CreateGame(Models.Game commonGame)
+		public async Task CreateGame(CommonModels.Game commonGame)
 		{
 			var game = _mapper.Map<Game>(commonGame);
 			await _boardGameContext.AddAsync(game);
 			await _boardGameContext.SaveChangesAsync();
 		}
 
-		public async Task<Models.Game> GetGame(long id)
+		public async Task<CommonModels.Game> GetGame(long id)
 		{
 			var game = await _boardGameContext
 				.Games.Include(q => q.GameOwners)
 				.FirstOrDefaultAsync(q => q.Id == id);
-			return _mapper.Map<Models.Game>(game);
+			return _mapper.Map<CommonModels.Game>(game);
 		}
 
-		public async Task EditGame(Models.Game commonGame)
+		public async Task EditGame(CommonModels.Game commonGame)
 		{
 			var game = await _boardGameContext
 				.Games.Include(q => q.GameOwners)
@@ -57,12 +57,12 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			await _boardGameContext.SaveChangesAsync();
 		}
 
-		public async Task<List<Models.Game>> GetAllGames()
+		public async Task<List<CommonModels.Game>> GetAllGames()
 		{
 			var gameList = _boardGameContext
 				.Games.Include(q => q.GameOwners)
 				.ToListAsync();
-			return _mapper.Map<List<Models.Game>>(gameList);
+			return _mapper.Map<List<CommonModels.Game>>(gameList);
 		}
 	}
 }
