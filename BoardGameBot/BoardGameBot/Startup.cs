@@ -1,5 +1,5 @@
 ﻿using BoardGameBot.Database.Adapter.Converts;
-using BoardGameBot.Database.Adapter.Repositories.Extensions;
+using BoardGameBot.Database.Adapter.Extensions;
 using BoardGameBot.Database.PostgreSQL;
 
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +19,7 @@ namespace BoardGameBot
 			services.AddControllersWithViews();
 
 			var connectionString = Configuration.GetConnectionString("BoardGameConnection");
-			services.AddDbContextPool<BoardGameContext>((options) => options.UseNpgsql(connectionString));
+			services.AddDbContextPool<BoardGameContext>(options => options.UseNpgsql(connectionString));
 
 			services.AddAutoMapper(c => 
 				c.AddProfile<GameBoardAutoMapperProfile>(), typeof(Startup)

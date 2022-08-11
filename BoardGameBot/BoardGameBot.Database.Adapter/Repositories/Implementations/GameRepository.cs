@@ -36,7 +36,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			return _mapper.Map<Models.Game>(game);
 		}
 
-		public async Task<long> EditGame(Models.Game commonGame)
+		public async Task EditGame(Models.Game commonGame)
 		{
 			var game = await _boardGameContext
 				.Games.Include(q => q.GameOwners)
