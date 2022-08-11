@@ -10,7 +10,9 @@ namespace BoardGameBot.Database.PostgreSQL
 		public DbSet<Game> Games { get; set; }
 		public DbSet<GameOwner> GameOwners { get; set; }
 
-		public BoardGameContext(DbContextOptions<BoardGameContext> options) : base(options) { }
+		public BoardGameContext(DbContextOptions<BoardGameContext> options) : base(options)
+		{
+		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{

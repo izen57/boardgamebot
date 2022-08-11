@@ -1,4 +1,6 @@
-﻿using BoardGameBot.Database.PostgreSQL;
+﻿using BoardGameBot.Database.Adapter.Converts;
+using BoardGameBot.Database.Adapter.Extensions;
+using BoardGameBot.Database.PostgreSQL;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +19,12 @@ namespace BoardGameBot
 			services.AddControllersWithViews();
 
 			var connectionString = Configuration.GetConnectionString("BoardGameConnection");
-			services.AddDbContextPool<BoardGameContext>((options) => options.UseNpgsql(connectionString));
+			services.AddDbContextPool<BoardGameContext>(options => options.UseNpgsql(connectionString));
+
+			services.AddAutoMapper(c => 
+				c.AddProfile<GameBoardAutoMapperProfile>(), typeof(Startup)
+			);
+			services.AddRepositories();
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -39,8 +46,11 @@ namespace BoardGameBot
 
 		private static void UpdateDatabase(IApplicationBuilder app)
 		{
-			using var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
-			using var context = serviceScope.ServiceProvider.GetService<BoardGameContext>();
+			using var serviceScope = app.ApplicationServices
+				.GetRequiredService<IServiceScopeFactory>()
+				.CreateScope();
+			using var context = serviceScope.ServiceProvider
+				.GetService<BoardGameContext>();
 			context?.Database.Migrate();
 		}
 	}
