@@ -6,7 +6,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Interfaces
 	{
 		Task CreatePoll(Poll commonPoll);
 		Task<Poll> GetPoll(long id);
-		Task EditPoll(IPollRepository commonPoll);
+		Task EditPoll(Poll commonPoll);
 		Task<List<Poll>> GetAllPolls();
 	}
 }

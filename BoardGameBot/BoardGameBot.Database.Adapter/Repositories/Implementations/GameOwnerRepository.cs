@@ -33,7 +33,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			var gameOwner = await _boardGameContext
 				.GameOwners.Include(q => q.Games)
 				.FirstOrDefaultAsync(q => q.Id == id);
-			return _mapper.Map<COmmonModels.GameOwner>(gameOwner);
+			return _mapper.Map<CommonModels.GameOwner>(gameOwner);
 		}
 
 		public async Task EditGameOwner(CommonModels.GameOwner commonGameOwner)

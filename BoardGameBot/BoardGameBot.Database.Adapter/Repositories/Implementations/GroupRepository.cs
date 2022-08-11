@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using CommonModels = BoardGameBot.Models;
 
 namespace BoardGameBot.Database.Adapter.Repositories.Implementations
-
 {
 	public class GroupRepository: IGroupRepository
 	{

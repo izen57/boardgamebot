@@ -63,5 +63,3 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 		}
 	}
 }
-	}
-}
