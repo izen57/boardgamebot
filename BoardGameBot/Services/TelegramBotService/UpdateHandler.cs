@@ -81,6 +81,7 @@ namespace TelegramBotService
 					BotOnLeftMemberAsync(message.LeftChatMember!, message.Chat.Id),
 				MessageType.ChatMembersAdded =>
 					BotOnAddedMembersAsync(message.NewChatMembers!, message.Chat.Id),
+				MessageType.Text => BotOnTextAsync(message!)
 			};
 			try
 			{
@@ -91,6 +92,62 @@ namespace TelegramBotService
 				throw exception;
 			}
 		}
+
+		private async Task BotOnTextAsync(Message message)
+		{
+			//var handler = message.Text.ToLower() switch
+			//{
+			//	//"/bg_AddUser" => BotOnAddUser(message)
+			//};
+			//try
+			//{
+			//	await handler;
+			//}
+			//catch (Exception exception)
+			//{
+			//	throw exception;
+			//}
+
+		}
+
+		//private async Task BotOnAddUser(Message message)
+		//{
+		//	if (message.Text == "/bg_AddUser")
+		//	{ 
+		//	//	var groups = await _groupRepository.GetAllGroupAsync();
+		//	//	foreach (var group in groups)
+		//	//	{
+		//	//		//выбор группы через inline
+		//	//	}
+		//	//}
+		//	//var groups = await _groupRepository.GetAllGroupAsync();
+		//	//if (groups.Any(g => g.Id == message.Chat.Id))
+		//	//	return;
+
+		//	//var adminMembers = await _botClient.GetChatAdministratorsAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/);
+		//	//var isMember = await _botClient.GetChatMembersAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/, message.ForwardFrom.Id);
+		//	//if (!isMember)
+		//	//{
+		//	//	await _botClient.SendTextMessageAsync(message.Chat.Id, "не состоите в группе");
+		//	//}
+		//	var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == message.ForwardFrom?.Id);
+
+		//	long? adminMemberId = null;
+		//	if (adminMember != null)
+		//		adminMemberId = /*получения от inline-клавы от пользователя, в какую группу добавить*/;
+		//	var gameOwner = new GameOwner(
+		//		message.ForwardFrom.Id,
+		//		message.ForwardFrom.FirstName,
+		//		adminMemberId,
+		//		/*получения от inline-клавы от пользователя, в какую группу добавить*/
+		//		message.ForwardFrom.Username,
+		//		null,
+		//		null,
+		//		null
+		//	);
+		//	await _gameOwnerRepository.CreateGameOwnerAsync(gameOwner);
+
+		//}
 
 		private async Task BotOnLeftMemberAsync(User member, long groupId)
 		{
@@ -119,6 +176,7 @@ namespace TelegramBotService
 						null,
 						null
 					);
+					await _gameOwnerRepository.CreateGameOwnerAsync(gameOwner);
 				}
 			}
 		}
