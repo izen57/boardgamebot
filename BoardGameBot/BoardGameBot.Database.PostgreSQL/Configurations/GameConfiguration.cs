@@ -9,10 +9,13 @@ namespace BoardGameBot.Database.PostgreSQL.Configurations
 	{
 		public void Configure(EntityTypeBuilder<Game> builder)
 		{
-			builder.HasIndex(game => game.Id).IsUnique();
+			builder.HasIndex(game => game.Id)
+				.IsUnique();
 			builder.HasKey(game => game.Id);
-			builder.Property(game => game.Id).IsRequired();
-			builder.HasMany(game => game.GameOwners).WithMany(owner => owner.Games);
+			builder.Property(game => game.Id)
+				.IsRequired();
+			builder.HasMany(game => game.GameOwners)
+				.WithMany(owner => owner.Games);
 		}
 	}
 }

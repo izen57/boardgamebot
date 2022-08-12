@@ -9,10 +9,13 @@ namespace BoardGameBot.Database.PostgreSQL.Configurations
 	{
 		public void Configure(EntityTypeBuilder<Poll> builder)
 		{
-			builder.HasIndex(poll => poll.Id).IsUnique();
+			builder.HasIndex(poll => poll.Id)
+				.IsUnique();
 			builder.HasKey(poll => poll.Id);
-			builder.Property(poll => poll.Id).IsRequired();
-			builder.Property(poll => poll.DayInterval).HasMaxLength(1);
+			builder.Property(poll => poll.Id)
+				.IsRequired();
+			builder.Property(poll => poll.DayInterval)
+				.HasMaxLength(1);
 		}
 	}
 }

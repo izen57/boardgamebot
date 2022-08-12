@@ -9,9 +9,11 @@ namespace BoardGameBot.Database.PostgreSQL.Configurations
 	{
 		public void Configure(EntityTypeBuilder<Group> builder)
 		{
-			builder.HasIndex(group => group.Id).IsUnique();
+			builder.HasIndex(group => group.Id)
+				.IsUnique();
 			builder.HasKey(group => group.Id);
-			builder.Property(group => group.Id).IsRequired();
+			builder.Property(group => group.Id)
+				.IsRequired();
 			builder.HasMany(group => group.Members)
 				.WithOne(gameOwner => gameOwner.GroupMember)
 				.HasForeignKey(gameOwner => gameOwner.GroupMemberId);

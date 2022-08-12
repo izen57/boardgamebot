@@ -26,7 +26,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			using var database = _contextFactory.GetContext();
 
 			var game = _mapper.Map<Game>(commonGame);
-			await database.AddAsync(game);
+			await database.Games.AddAsync(game);
 			await database.SaveChangesAsync();
 		}
 

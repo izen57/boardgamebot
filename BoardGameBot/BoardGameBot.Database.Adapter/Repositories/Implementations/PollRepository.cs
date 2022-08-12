@@ -26,7 +26,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			using var database = _contextFactory.GetContext();
 
 			var poll = _mapper.Map<Poll>(commonPoll);
-			await database.AddAsync(poll);
+			await database.Polls.AddAsync(poll);
 			await database.SaveChangesAsync();
 		}
 

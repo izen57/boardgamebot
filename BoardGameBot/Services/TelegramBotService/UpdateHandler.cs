@@ -56,9 +56,7 @@ namespace TelegramBotService
 		private async Task BotOnMyChatMemberAsync(ChatMemberUpdated chatMember)
 		{
 			if (chatMember.NewChatMember.Status == ChatMemberStatus.Left || chatMember.NewChatMember.Status == ChatMemberStatus.Kicked)
-			{
 				await _groupRepository.DeleteGroupAsync(chatMember.Chat.Id);
-			}
 			if (chatMember.NewChatMember.Status == ChatMemberStatus.Member)
 			{
 				var group = new Group(
