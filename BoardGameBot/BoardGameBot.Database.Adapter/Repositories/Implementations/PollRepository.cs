@@ -38,7 +38,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			poll.Id = commonPoll.Id;
 			poll.Name = commonPoll.Name;
 			poll.Time = commonPoll.Time;
-			poll.Group = _mapper.Map<Group>(commonPoll.PollGroup);
+			poll.Group = _mapper.Map<Group>(commonPoll.Group);
 
 			_boardGameContext.Polls.Update(poll);
 			await _boardGameContext.SaveChangesAsync();
