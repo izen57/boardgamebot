@@ -102,21 +102,24 @@ namespace TelegramBotService
 			var adminMembers = await _botClient.GetChatAdministratorsAsync(groupId);
 			foreach (var member in members)
 			{
-				var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == member.Id);
+				if (!member.IsBot)
+				{
+					var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == member.Id);
 
-				long? adminMemberId = null;
-				if (adminMember != null)
-					adminMemberId = groupId;
-				var gameOwner = new GameOwner(
-					member.Id,
-					member.FirstName,
-					adminMemberId,
-					groupId,
-					member.Username,
-					null,
-					null,
-					null
-				);
+					long? adminMemberId = null;
+					if (adminMember != null)
+						adminMemberId = groupId;
+					var gameOwner = new GameOwner(
+						member.Id,
+						member.FirstName,
+						adminMemberId,
+						groupId,
+						member.Username,
+						null,
+						null,
+						null
+					);
+				}
 			}
 		}
 
