@@ -9,5 +9,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Interfaces
 		Task<GameOwner> GetGameOwnerAsync(long id);
 		Task EditGameOwnerAsync(GameOwner gameOwner);
 		Task<List<GameOwner>> GetAllGameOwnersAsync();
+		Task<bool> DeleteGameOwnerAsync(long id);
+
 	}
 }

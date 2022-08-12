@@ -6,7 +6,7 @@
 		{
 		}
 
-		public GameOwner(long id, string name, int groupAdminId, int groupMemberId, string tGRef, Group? groupAdmin, Group? groupMember, ICollection<Game>? games)
+		public GameOwner(long id, string name, long? groupAdminId, long? groupMemberId, string tGRef, Group? groupAdmin, Group? groupMember, ICollection<Game>? games)
 		{
 			Id = id;
 			Name = name;
@@ -20,8 +20,8 @@
 
 		public long Id { get; set; }
 		public string Name { get; set; }
-		public long GroupAdminId { get; set; }
-		public long GroupMemberId { get; set; }
+		public long? GroupAdminId { get; set; }
+		public long? GroupMemberId { get; set; }
 		public string TGRef { get; set; }
 		public Group? GroupAdmin { get; set; }
 		public Group? GroupMember { get; set; }

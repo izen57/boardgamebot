@@ -72,25 +72,51 @@ namespace TelegramBotService
 
 		}
 
+
 		private async Task BotOnMessageReceivedAsync(Message message)
 		{
-			if (message.LeftChatMember is { } leftChatMember)
+			var handler = message.Type switch
 			{
-				var chatId = message.Chat.Id;
-
-				Console.WriteLine($"User {leftChatMember.Id} left in chat {chatId}.");
-				//var gameOwner = new GameOwner(
-				//	chat
-				//)
-				//var gameOwnerRepository.
+				MessageType.ChatMemberLeft =>
+					BotOnLeftMemberAsync(message.LeftChatMember!, message.Chat.Id),
+				MessageType.ChatMembersAdded =>
+					BotOnAddedMembersAsync(message.NewChatMembers!, message.Chat.Id),
+			};
+			try
+			{
+				await handler;
 			}
-			if (message.NewChatMembers is { } newChatMembers)
+			catch (Exception exception)
 			{
-				var chatId = message.Chat.Id;
-				foreach (var newChatMember in newChatMembers)
-				{
-					Console.WriteLine($"User {newChatMember.Id} new in chat {chatId}.");
-				}
+				throw exception;
+			}
+		}
+
+		private async Task BotOnLeftMemberAsync(User member, long groupId)
+		{
+			await _gameOwnerRepository.DeleteGameOwnerAsync(member.Id);
+		}
+
+		private async Task BotOnAddedMembersAsync(User[] members, long groupId)
+		{
+			var adminMembers = await _botClient.GetChatAdministratorsAsync(groupId);
+			foreach (var member in members)
+			{
+				var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == member.Id);
+
+				long? adminMemberId = null;
+				if (adminMember != null)
+					adminMemberId = groupId;
+				var gameOwner = new GameOwner(
+					member.Id,
+					member.FirstName,
+					adminMemberId,
+					groupId,
+					member.Username,
+					null,
+					null,
+					null
+				);
 			}
 		}
 

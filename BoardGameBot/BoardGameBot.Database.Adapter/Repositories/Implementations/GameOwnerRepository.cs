@@ -66,5 +66,21 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 				.ToListAsync();
 			return _mapper.Map<List<CommonModels.GameOwner>>(gameOwnerList);
 		}
+
+		public async Task<bool> DeleteGameOwnerAsync(long id)
+		{
+			using var database = _contextFactory.GetContext();
+
+			var gameOwner = await database
+				.GameOwners
+				.FirstOrDefaultAsync(q => q.Id == id);
+			if (gameOwner != null)
+			{
+				database.GameOwners.Remove(gameOwner);
+				await database.SaveChangesAsync();
+				return true;
+			}
+			return false;
+		}
 	}
 }
