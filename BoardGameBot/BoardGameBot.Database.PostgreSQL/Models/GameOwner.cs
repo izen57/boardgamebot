@@ -12,6 +12,5 @@
 		public string TGRef { get; set; }
 		public Group GameOwnerGroup { get; set; }
 		public virtual ICollection<Game> Games { get; set; }
-
 	}
 }

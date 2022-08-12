@@ -32,15 +32,15 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 		{
 			var group = await _boardGameContext
 				.Groups
-				.Include(q => q.AllMembers)
-				.Include(q => q.AllPolls)
+				.Include(q => q.Members)
+				.Include(q => q.Polls)
 				.FirstOrDefaultAsync(q => q.Id == commonGroup.Id);
 
 			group.Id = commonGroup.Id;
 			group.Description = commonGroup.Description;
-			group.AllMembers = _mapper.Map<ICollection<GameOwner>>(commonGroup.AllMembers);
-			group.AllAdmins = _mapper.Map<ICollection<GameOwner>>(commonGroup.AllAdmins);
-			group.AllPolls = _mapper.Map<ICollection<Poll>>(commonGroup.AllPolls);
+			group.Members = _mapper.Map<ICollection<GameOwner>>(commonGroup.Members);
+			group.Admins = _mapper.Map<ICollection<GameOwner>>(commonGroup.Admins);
+			group.Polls = _mapper.Map<ICollection<Poll>>(commonGroup.Polls);
 
 			_boardGameContext.Groups.Update(group);
 			await _boardGameContext.SaveChangesAsync();
@@ -49,8 +49,8 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 		public async Task<List<CommonModels.Group>> GetAllGroup() {
 			var groupList = await _boardGameContext
 				.Groups
-				.Include(q => q.AllMembers)
-				.Include(q => q.AllPolls)
+				.Include(q => q.Members)
+				.Include(q => q.Polls)
 				.ToListAsync();
 			return _mapper.Map<List<CommonModels.Group>>(groupList);
 		}
@@ -59,8 +59,8 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 		{
 			var group = await _boardGameContext
 				.Groups
-				.Include(q => q.AllMembers)
-				.Include(q => q.AllPolls)
+				.Include(q => q.Members)
+				.Include(q => q.Polls)
 				.FirstOrDefaultAsync(q => q.Id == id);
 			return _mapper.Map<CommonModels.Group>(group);
 		}

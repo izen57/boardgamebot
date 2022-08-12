@@ -13,8 +13,8 @@ namespace BoardGameBot.Database.PostgreSQL.Configurations
 			builder.HasKey(owner => owner.Id);
 			builder.Property(owner => owner.Id).IsRequired();
 			builder.HasMany(owner => owner.Games).WithMany(game => game.GameOwners);
-			builder.HasOne(gameOwner => gameOwner.GameOwnerGroup).WithMany(group => group.AllMembers);
-			builder.HasOne(gameOwner => gameOwner.GameOwnerGroup).WithMany(group => group.AllMembers);
+			builder.HasOne(gameOwner => gameOwner.GameOwnerGroup).WithMany(group => group.Members);
+			builder.HasOne(gameOwner => gameOwner.GameOwnerGroup).WithMany(group => group.Members);
 		}
 	}
 }

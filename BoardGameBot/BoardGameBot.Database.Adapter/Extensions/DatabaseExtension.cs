@@ -9,9 +9,10 @@ namespace BoardGameBot.Database.Adapter.Extensions
 	{
 		public static IServiceCollection AddRepositories(this IServiceCollection services)
 		{
-			// почему временные сервисы, а не по области применения
 			services.AddTransient<IGameOwnerRepository, GameOwnerRepository>();
 			services.AddTransient<IGameRepository, GameRepository>();
+			services.AddTransient<IGroupRepository, GroupRepository>();
+			services.AddTransient<IPollRepository, PollRepository>();
 			return services;
 		}
 	}

@@ -3,22 +3,22 @@
 	public class Group
 	{
 		public Group(int id, string name, string description,
-			ICollection<GameOwner> allMembers, ICollection<GameOwner> allAdmins, ICollection<Poll> allPolls
+			ICollection<GameOwner> members, ICollection<GameOwner> admins, ICollection<Poll> polls
 		)
 		{
 			Id = id;
 			Name = name;
 			Description = description;
-			AllMembers = allMembers;
-			AllAdmins = allAdmins;
-			AllPolls = allPolls;
+			Members = members;
+			Admins = admins;
+			Polls = polls;
 		}
 
 		public int Id { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
-		public ICollection<GameOwner> AllMembers { get; set; }
-		public ICollection<GameOwner> AllAdmins { get; set; }
-		public ICollection<Poll> AllPolls { get; set; }
+		public ICollection<GameOwner> Members { get; set; }
+		public ICollection<GameOwner> Admins { get; set; }
+		public ICollection<Poll> Polls { get; set; }
 	}
 }
