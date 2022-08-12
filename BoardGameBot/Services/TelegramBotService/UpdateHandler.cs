@@ -74,7 +74,24 @@ namespace TelegramBotService
 
 		private async Task BotOnMessageReceivedAsync(Message message)
 		{
-			//if (message.c)
+			if (message.LeftChatMember is { } leftChatMember)
+			{
+				var chatId = message.Chat.Id;
+
+				Console.WriteLine($"User {leftChatMember.Id} left in chat {chatId}.");
+				//var gameOwner = new GameOwner(
+				//	chat
+				//)
+				//var gameOwnerRepository.
+			}
+			if (message.NewChatMembers is { } newChatMembers)
+			{
+				var chatId = message.Chat.Id;
+				foreach (var newChatMember in newChatMembers)
+				{
+					Console.WriteLine($"User {newChatMember.Id} new in chat {chatId}.");
+				}
+			}
 		}
 
 		public Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

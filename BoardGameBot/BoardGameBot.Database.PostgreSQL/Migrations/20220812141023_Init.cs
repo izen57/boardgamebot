@@ -17,12 +17,12 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Title = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    Players = table.Column<string>(type: "text", nullable: false),
-                    Genre = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Players = table.Column<string>(type: "text", nullable: true),
+                    Genre = table.Column<string>(type: "text", nullable: true),
                     Complexity = table.Column<int>(type: "integer", nullable: false),
-                    LetsPlay = table.Column<string>(type: "text", nullable: false),
-                    Rules = table.Column<string>(type: "text", nullable: false),
+                    LetsPlay = table.Column<string>(type: "text", nullable: true),
+                    Rules = table.Column<string>(type: "text", nullable: true),
                     Played = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -36,8 +36,8 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -50,10 +50,10 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    GroupAdminId = table.Column<long>(type: "bigint", nullable: false),
-                    GroupMemberId = table.Column<long>(type: "bigint", nullable: false),
-                    TGRef = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    GroupAdminId = table.Column<long>(type: "bigint", nullable: true),
+                    GroupMemberId = table.Column<long>(type: "bigint", nullable: true),
+                    TGRef = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -62,14 +62,12 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
                         name: "FK_GameOwners_Groups_GroupAdminId",
                         column: x => x.GroupAdminId,
                         principalTable: "Groups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_GameOwners_Groups_GroupMemberId",
                         column: x => x.GroupMemberId,
                         principalTable: "Groups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -81,7 +79,7 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     DayInterval = table.Column<int>(type: "integer", maxLength: 1, nullable: false),
-                    GroupId = table.Column<long>(type: "bigint", nullable: false)
+                    GroupId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -90,8 +88,7 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
                         name: "FK_Polls_Groups_GroupId",
                         column: x => x.GroupId,
                         principalTable: "Groups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BoardGameBot.Database.PostgreSQL.Migrations
 {
     [DbContext(typeof(BoardGameContext))]
-    [Migration("20220812135944_Init2")]
-    partial class Init2
+    [Migration("20220812141023_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
