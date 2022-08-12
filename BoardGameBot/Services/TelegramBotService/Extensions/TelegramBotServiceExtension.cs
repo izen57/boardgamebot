@@ -14,7 +14,8 @@ namespace TelegramBotService.Extensions
 			var section = configuration.GetSection("TelegramBot");
 			var config = section.Get<TelegramBotConfiguration>();
 			services.AddTransient<ITelegramBotConfiguration>(service => config);
-			services.AddSingleton<ITelegramBotService, TelegramBotService>();
+			services.AddTransient<ITelegramBotService, TelegramBotService>();
+			services.AddTransient<UpdateHandler>();
 		}
 	}
 }

@@ -5,9 +5,9 @@ namespace BoardGameBot.Database.Adapter.Repositories.Interfaces
 {
 	public interface IGameOwnerRepository
 	{
-		Task CreateGameOwner(GameOwner gameOwner);
-		Task<GameOwner> GetGameOwner(long id);
-		Task EditGameOwner(GameOwner gameOwner);
-		Task<List<GameOwner>> GetAllGameOwners();
+		Task CreateGameOwnerAsync(GameOwner gameOwner);
+		Task<GameOwner> GetGameOwnerAsync(long id);
+		Task EditGameOwnerAsync(GameOwner gameOwner);
+		Task<List<GameOwner>> GetAllGameOwnersAsync();
 	}
 }

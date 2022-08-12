@@ -13,10 +13,12 @@ namespace TelegramBotService
 		private bool _isAbortRequested = false;
 		private Thread _backgroungThread;
 		private readonly ITelegramBotConfiguration _configuration;
+		private readonly UpdateHandler _updateHadler;
 
-		public TelegramBotService(ITelegramBotConfiguration configuration)
+		public TelegramBotService(ITelegramBotConfiguration configuration, UpdateHandler updateHadler)
 		{
 			_configuration = configuration;
+			_updateHadler = updateHadler;
 		}
 
 		public Thread StartAsync()
@@ -49,10 +51,9 @@ namespace TelegramBotService
 				ThrowPendingUpdates = true
 			};
 			using var cts = new CancellationTokenSource();
-			var updateHadler = new UpdateHadler();
 			bot.StartReceiving(
-				updateHandler: updateHadler.HandleUpdateAsync,
-				pollingErrorHandler: updateHadler.HandlePollingErrorAsync,
+				updateHandler: _updateHadler.HandleUpdateAsync,
+				pollingErrorHandler: _updateHadler.HandlePollingErrorAsync,
 				receiverOptions: receiverOptions,
 				cancellationToken: cts.Token
 			);

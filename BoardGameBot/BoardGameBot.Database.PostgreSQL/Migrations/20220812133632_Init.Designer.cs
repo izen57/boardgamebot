@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BoardGameBot.Database.PostgreSQL.Migrations
 {
     [DbContext(typeof(BoardGameContext))]
-    [Migration("20220812112107_AddGroupAndPoll")]
-    partial class AddGroupAndPoll
+    [Migration("20220812133632_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,11 +26,11 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
 
             modelBuilder.Entity("BoardGameBot.Database.PostgreSQL.Models.Game", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Complexity")
                         .HasColumnType("integer");
@@ -72,17 +72,17 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
 
             modelBuilder.Entity("BoardGameBot.Database.PostgreSQL.Models.GameOwner", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<int>("GroupAdminId")
-                        .HasColumnType("integer");
+                    b.Property<long>("GroupAdminId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("GroupMemberId")
-                        .HasColumnType("integer");
+                    b.Property<long>("GroupMemberId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -106,11 +106,11 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
 
             modelBuilder.Entity("BoardGameBot.Database.PostgreSQL.Models.Group", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -130,18 +130,18 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
 
             modelBuilder.Entity("BoardGameBot.Database.PostgreSQL.Models.Poll", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("DayInterval")
                         .HasMaxLength(1)
                         .HasColumnType("integer");
 
-                    b.Property<int>("GroupId")
-                        .HasColumnType("integer");
+                    b.Property<long>("GroupId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -162,11 +162,11 @@ namespace BoardGameBot.Database.PostgreSQL.Migrations
 
             modelBuilder.Entity("GameGameOwner", b =>
                 {
-                    b.Property<int>("GameOwnersId")
-                        .HasColumnType("integer");
+                    b.Property<long>("GameOwnersId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("GamesId")
-                        .HasColumnType("integer");
+                    b.Property<long>("GamesId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("GameOwnersId", "GamesId");
 

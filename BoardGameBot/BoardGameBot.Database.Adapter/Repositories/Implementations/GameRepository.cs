@@ -12,33 +12,39 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 {
 	public class GameRepository: IGameRepository
 	{
-		private readonly BoardGameContext _boardGameContext;
+		private readonly IContextFactory _contextFactory;
 		private readonly IMapper _mapper;
 
-		public GameRepository(BoardGameContext boardGameContext, IMapper mapper)
+		public GameRepository(IContextFactory contextFactory, IMapper mapper)
 		{
-			_boardGameContext = boardGameContext ?? throw new ArgumentNullException(nameof(boardGameContext));
+			_contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
 			_mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 		}
 
-		public async Task CreateGame(CommonModels.Game commonGame)
+		public async Task CreateGameAsync(CommonModels.Game commonGame)
 		{
+			using var database = _contextFactory.GetContext();
+
 			var game = _mapper.Map<Game>(commonGame);
-			await _boardGameContext.AddAsync(game);
-			await _boardGameContext.SaveChangesAsync();
+			await database.AddAsync(game);
+			await database.SaveChangesAsync();
 		}
 
-		public async Task<CommonModels.Game> GetGame(long id)
+		public async Task<CommonModels.Game> GetGameAsync(long id)
 		{
-			var game = await _boardGameContext
+			using var database = _contextFactory.GetContext();
+
+			var game = await database
 				.Games.Include(q => q.GameOwners)
 				.FirstOrDefaultAsync(q => q.Id == id);
 			return _mapper.Map<CommonModels.Game>(game);
 		}
 
-		public async Task EditGame(CommonModels.Game commonGame)
+		public async Task EditGameAsync(CommonModels.Game commonGame)
 		{
-			var game = await _boardGameContext
+			using var database = _contextFactory.GetContext();
+
+			var game = await database
 				.Games.Include(q => q.GameOwners)
 				.FirstOrDefaultAsync(q => q.Id == commonGame.Id);
 
@@ -53,13 +59,15 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			game.Played = commonGame.Played;
 			game.GameOwners = _mapper.Map<ICollection<GameOwner>>(commonGame.GameOwners);
 
-			_boardGameContext.Games.Update(game);
-			await _boardGameContext.SaveChangesAsync();
+			database.Games.Update(game);
+			await database.SaveChangesAsync();
 		}
 
-		public async Task<List<CommonModels.Game>> GetAllGames()
+		public async Task<List<CommonModels.Game>> GetAllGamesAsync()
 		{
-			var gameList = _boardGameContext
+			using var database = _contextFactory.GetContext();
+
+			var gameList = database
 				.Games.Include(q => q.GameOwners)
 				.ToListAsync();
 			return _mapper.Map<List<CommonModels.Game>>(gameList);

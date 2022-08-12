@@ -12,33 +12,39 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 {
 	public class GameOwnerRepository: IGameOwnerRepository
 	{
-		private readonly BoardGameContext _boardGameContext;
+		private readonly IContextFactory _contextFactory;
 		private readonly IMapper _mapper;
 
-		public GameOwnerRepository(BoardGameContext boardGameContext, IMapper mapper)
+		public GameOwnerRepository(IContextFactory contextFactory, IMapper mapper)
 		{
-			_boardGameContext = boardGameContext ?? throw new ArgumentNullException(nameof(boardGameContext));
+			_contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
 			_mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 		}
 
-		public async Task CreateGameOwner(CommonModels.GameOwner commonGameOwner)
+		public async Task CreateGameOwnerAsync(CommonModels.GameOwner commonGameOwner)
 		{
+			using var database = _contextFactory.GetContext();
+
 			var gameOwner = _mapper.Map<GameOwner>(commonGameOwner);
-			await _boardGameContext.AddAsync(gameOwner);
-			await _boardGameContext.SaveChangesAsync();
+			await database.AddAsync(gameOwner);
+			await database.SaveChangesAsync();
 		}
 
-		public async Task<CommonModels.GameOwner> GetGameOwner(long id)
+		public async Task<CommonModels.GameOwner> GetGameOwnerAsync(long id)
 		{
-			var gameOwner = await _boardGameContext
+			using var database = _contextFactory.GetContext();
+
+			var gameOwner = await database
 				.GameOwners.Include(q => q.Games)
 				.FirstOrDefaultAsync(q => q.Id == id);
 			return _mapper.Map<CommonModels.GameOwner>(gameOwner);
 		}
 
-		public async Task EditGameOwner(CommonModels.GameOwner commonGameOwner)
+		public async Task EditGameOwnerAsync(CommonModels.GameOwner commonGameOwner)
 		{
-			var gameOwner = await _boardGameContext
+			using var database = _contextFactory.GetContext();
+
+			var gameOwner = await database
 				.GameOwners.Include(q => q.Games)
 				.FirstOrDefaultAsync(q => q.Id == commonGameOwner.Id);
 
@@ -47,13 +53,15 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			gameOwner.TGRef = commonGameOwner.TGRef;
 			gameOwner.Games = _mapper.Map<ICollection<Game>>(commonGameOwner.Games);
 
-			_boardGameContext.GameOwners.Update(gameOwner);
-			await _boardGameContext.SaveChangesAsync();
+			database.GameOwners.Update(gameOwner);
+			await database.SaveChangesAsync();
 		}
 
-		public async Task<List<CommonModels.GameOwner>> GetAllGameOwners()
+		public async Task<List<CommonModels.GameOwner>> GetAllGameOwnersAsync()
 		{
-			var gameOwnerList = _boardGameContext
+			using var database = _contextFactory.GetContext();
+
+			var gameOwnerList = database
 				.GameOwners.Include(q => q.Games)
 				.ToListAsync();
 			return _mapper.Map<List<CommonModels.GameOwner>>(gameOwnerList);

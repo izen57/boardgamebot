@@ -4,6 +4,7 @@ using BoardGameBot.Database.Adapter.Extensions;
 using BoardGameBot.Database.PostgreSQL;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 using TelegramBotService.Extensions;
 
@@ -12,6 +13,7 @@ namespace BoardGameBot
 	internal class Startup
 	{
 		public IConfiguration Configuration { get; }
+		public IServiceScopeFactory _serviceScopeFactory { get; }
 		public Startup(IConfiguration configuration)
 		{
 			Configuration = configuration;
@@ -22,7 +24,8 @@ namespace BoardGameBot
 			services.AddControllersWithViews();
 
 			var connectionString = Configuration.GetConnectionString("BoardGameConnection");
-			services.AddDbContextPool<BoardGameContext>(options => options.UseNpgsql(connectionString));
+			services.AddSingleton<IContextFactory>(new ContextFactory(connectionString));
+			services.AddDbContext<BoardGameContext>(options => options.UseNpgsql(connectionString));
 
 			services.AddAutoMapper(c => 
 				c.AddProfile<GameBoardAutoMapperProfile>(), typeof(Startup)

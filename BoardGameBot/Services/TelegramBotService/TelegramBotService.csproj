@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BoardGameBot.Core\BoardGameBot.Core.csproj" />
+    <ProjectReference Include="..\..\BoardGameBot.Database.Adapter\BoardGameBot.Database.Adapter.csproj" />
   </ItemGroup>
 
 </Project>

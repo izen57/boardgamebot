@@ -7,7 +7,7 @@
 			GameOwners = new HashSet<GameOwner>();
 		}
 
-		public int Id { get; set; }
+		public long Id { get; set; }
 		public string Title { get; set; }
 		public string Description { get; set; }
 		public string Players { get; set; }
@@ -16,6 +16,6 @@
 		public string LetsPlay { get; set; }
 		public string Rules { get; set; }
 		public int Played { get; set; }
-		public virtual ICollection<GameOwner> GameOwners { get; set; }
+		public virtual ICollection<GameOwner>? GameOwners { get; set; }
 	}
 }

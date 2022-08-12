@@ -2,7 +2,7 @@
 {
 	public class Poll
 	{
-		public Poll(int id, string name, DateTime time, int dayInterval, int groupId, Group group)
+		public Poll(long id, string name, DateTime time, int dayInterval, int groupId, Group? group)
 		{
 			Id = id;
 			Name = name;
@@ -12,11 +12,11 @@
 			Group = group;
 		}
 
-		public int Id { get; set; }
+		public long Id { get; set; }
 		public string Name { get; set; }
 		public DateTime Time { get; set; }
 		public int DayInterval { get; set; }
-		public int GroupId { get; set; }
-		public Group Group { get; set; }
+		public long GroupId { get; set; }
+		public Group? Group { get; set; }
 	}
 }

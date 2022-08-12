@@ -12,25 +12,29 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 {
 	public class PollRepository: IPollRepository
 	{
-		private readonly BoardGameContext _boardGameContext;
+		private readonly IContextFactory _contextFactory;
 		private readonly IMapper _mapper;
 
-		public PollRepository(BoardGameContext boardGameContext, IMapper mapper)
+		public PollRepository(IContextFactory contextFactor, IMapper mapper)
 		{
-			_boardGameContext = boardGameContext ?? throw new ArgumentNullException(nameof(boardGameContext));
+			_contextFactory = contextFactor ?? throw new ArgumentNullException(nameof(contextFactor));
 			_mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 		}
 
-		public async Task CreatePoll(CommonModels.Poll commonPoll)
+		public async Task CreatePollAsync(CommonModels.Poll commonPoll)
 		{
+			using var database = _contextFactory.GetContext();
+
 			var poll = _mapper.Map<Poll>(commonPoll);
-			await _boardGameContext.AddAsync(poll);
-			await _boardGameContext.SaveChangesAsync();
+			await database.AddAsync(poll);
+			await database.SaveChangesAsync();
 		}
 
-		public async Task EditPoll(CommonModels.Poll commonPoll)
+		public async Task EditPollAsync(CommonModels.Poll commonPoll)
 		{
-			var poll = await _boardGameContext
+			using var database = _contextFactory.GetContext();
+
+			var poll = await database
 				.Polls
 				.Include(q => q.Group)
 				.FirstOrDefaultAsync(q => q.Id == commonPoll.Id);
@@ -40,22 +44,26 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 			poll.Time = commonPoll.Time;
 			poll.Group = _mapper.Map<Group>(commonPoll.Group);
 
-			_boardGameContext.Polls.Update(poll);
-			await _boardGameContext.SaveChangesAsync();
+			database.Polls.Update(poll);
+			await database.SaveChangesAsync();
 		}
 
-		public async Task<List<CommonModels.Poll>> GetAllPolls()
+		public async Task<List<CommonModels.Poll>> GetAllPollsAsync()
 		{
-			var pollList = await _boardGameContext
+			using var database = _contextFactory.GetContext();
+
+			var pollList = await database
 				.Polls
 				.Include(q => q.Group)
 				.ToListAsync();
 			return _mapper.Map<List<CommonModels.Poll>>(pollList);
 		}
 
-		public async Task<CommonModels.Poll> GetPoll(long id)
+		public async Task<CommonModels.Poll> GetPollAsync(long id)
 		{
-			var poll = await _boardGameContext
+			using var database = _contextFactory.GetContext();
+
+			var poll = await database
 				.Polls
 				.Include(q => q.Group)
 				.FirstOrDefaultAsync(q => q.Id == id);
