@@ -6,13 +6,13 @@
 		{
 			Id = id;
 			Name = name;
-			Timing = timing;
+			Time = timing;
 			PollGroup = pollGroup;
 		}
 
 		public int Id { get; set; }
 		public string Name { get; set; }
-		public DateTime Timing { get; set; }
+		public DateTime Time { get; set; }
 		public Group PollGroup { get; set; }
 	}
 }

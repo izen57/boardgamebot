@@ -32,7 +32,7 @@ namespace BoardGameBot.Database.Adapter.Converts
 
 			CreateMap<DBModels.Poll, CommonModels.Poll>().ForMember(
 				x => x.PollGroup,
-				x => x.MapFrom(y => y.PollGroup)
+				x => x.MapFrom(y => y.Group)
 			);
 		}
 	}

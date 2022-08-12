@@ -12,9 +12,15 @@ namespace BoardGameBot.Database.PostgreSQL.Configurations
 			builder.HasIndex(group => group.Id).IsUnique();
 			builder.HasKey(group => group.Id);
 			builder.Property(group => group.Id).IsRequired();
-			builder.HasMany(group => group.Members).WithOne(gameOwner => gameOwner.GameOwnerGroup);
-			builder.HasMany(group => group.Admins).WithOne(gameOwner => gameOwner.GameOwnerGroup);
-			builder.HasMany(group => group.Polls).WithOne(poll => poll.PollGroup);
+			builder.HasMany(group => group.Members)
+				.WithOne(gameOwner => gameOwner.GroupMember)
+				.HasForeignKey(gameOwner => gameOwner.GroupMemberId);
+			builder.HasMany(group => group.Admins)
+				.WithOne(gameOwner => gameOwner.GroupAdmin)
+				.HasForeignKey(gameOwner => gameOwner.GroupAdminId);
+			builder.HasMany(group => group.Polls)
+				.WithOne(poll => poll.Group)
+				.HasForeignKey(poll => poll.GroupId);
 		}
 	}
 }

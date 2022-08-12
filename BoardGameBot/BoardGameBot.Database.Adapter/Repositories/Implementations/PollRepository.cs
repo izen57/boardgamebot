@@ -32,13 +32,13 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 		{
 			var poll = await _boardGameContext
 				.Polls
-				.Include(q => q.PollGroup)
+				.Include(q => q.Group)
 				.FirstOrDefaultAsync(q => q.Id == commonPoll.Id);
 
 			poll.Id = commonPoll.Id;
 			poll.Name = commonPoll.Name;
-			poll.Timing = commonPoll.Timing;
-			poll.PollGroup = _mapper.Map<Group>(commonPoll.PollGroup);
+			poll.Time = commonPoll.Time;
+			poll.Group = _mapper.Map<Group>(commonPoll.PollGroup);
 
 			_boardGameContext.Polls.Update(poll);
 			await _boardGameContext.SaveChangesAsync();
@@ -48,7 +48,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 		{
 			var pollList = await _boardGameContext
 				.Polls
-				.Include(q => q.PollGroup)
+				.Include(q => q.Group)
 				.ToListAsync();
 			return _mapper.Map<List<CommonModels.Poll>>(pollList);
 		}
@@ -57,7 +57,7 @@ namespace BoardGameBot.Database.Adapter.Repositories.Implementations
 		{
 			var poll = await _boardGameContext
 				.Polls
-				.Include(q => q.PollGroup)
+				.Include(q => q.Group)
 				.FirstOrDefaultAsync(q => q.Id == id);
 			return _mapper.Map<CommonModels.Poll>(poll);
 		}

@@ -6,7 +6,7 @@
 		{
 		}
 
-		public GameOwner(long id, string name, string tGRef, ICollection<Game> games)
+		public GameOwner(int id, string name, string tGRef, ICollection<Game> games)
 		{
 			Id = id;
 			Name = name;
@@ -14,11 +14,13 @@
 			Games = games;
 		}
 
-		public long Id { get; set; }
+		public int Id { get; set; }
 		public string Name { get; set; }
 		public string TGRef { get; set; }
-
+		public int GroupAdminId { get; set; }
+		public int GroupMemberId { get; set; }
+		public Group GroupAdmin { get; set; }
+		public Group GroupMember { get; set; }
 		public virtual ICollection<Game> Games { get; set; }
-
 	}
 }

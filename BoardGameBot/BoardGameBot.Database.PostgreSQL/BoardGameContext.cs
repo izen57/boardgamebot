@@ -20,6 +20,8 @@ namespace BoardGameBot.Database.PostgreSQL
 		{
 			modelBuilder.ApplyConfiguration(new GameConfiguration());
 			modelBuilder.ApplyConfiguration(new GameOwnerConfiguration());
+			modelBuilder.ApplyConfiguration(new GroupConfiguration());
+			modelBuilder.ApplyConfiguration(new PollConfiguration());
 		}
 	}
 }

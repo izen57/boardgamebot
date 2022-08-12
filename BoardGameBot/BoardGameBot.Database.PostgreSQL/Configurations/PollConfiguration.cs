@@ -12,7 +12,7 @@ namespace BoardGameBot.Database.PostgreSQL.Configurations
 			builder.HasIndex(poll => poll.Id).IsUnique();
 			builder.HasKey(poll => poll.Id);
 			builder.Property(poll => poll.Id).IsRequired();
-			builder.HasOne(poll => poll.PollGroup).WithMany(group => group.AllPolls);
+			builder.Property(poll => poll.DayInterval).HasMaxLength(1);
 		}
 	}
 }
