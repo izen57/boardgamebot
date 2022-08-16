@@ -5,6 +5,7 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TelegramBotService
 {
@@ -43,7 +44,7 @@ namespace TelegramBotService
 			{
 				//UpdateType.te
 				UpdateType.Message =>
-					BotOnMessageReceivedAsync(update.Message!),
+					BotOnMessageReceivedAsync(update.Message!, update),
 				UpdateType.MyChatMember =>
 					BotOnMyChatMemberAsync(update.MyChatMember!),
 			};
@@ -84,7 +85,7 @@ namespace TelegramBotService
 		/**
 		 * Обработка событий ботом в самом чате. Например: кто-то зашёл в группу или вышел оттуда, боту дали команду.
 		 */
-		private async Task BotOnMessageReceivedAsync(Message message)
+		private async Task BotOnMessageReceivedAsync(Message message, Update update)
 		{
 			var handler = message.Type switch
 			{
@@ -92,7 +93,7 @@ namespace TelegramBotService
 					BotOnLeftMemberAsync(message.LeftChatMember!, message.Chat.Id),
 				MessageType.ChatMembersAdded =>
 					BotOnAddedMembersAsync(message.NewChatMembers!, message.Chat.Id),
-				MessageType.Text => BotOnTextAsync(message!)
+				MessageType.Text => BotOnTextAsync(message!, update)
 			};
 			try
 			{
@@ -107,12 +108,12 @@ namespace TelegramBotService
 		/**
 		 * Обработка текстового сообщения, присланного боту.
 		 */
-		private async Task BotOnTextAsync(Message message)
+		private async Task BotOnTextAsync(Message message, Update update)
 		{
-			var handler = message.Text.ToLower() switch
+			var handler = message.Text switch
 			{
 				"@BoardGameQ_Bot" => BotOnTagAsync(message),
-				//"@BoardGameQ_Bot, /bg_AddUser" => BotOnAddUser(message)
+				"/bg_adduser@BoardGameQ_Bot" => BotOnAddUser(message, update.CallbackQuery!)
 			};
 			try
 			{
@@ -126,47 +127,88 @@ namespace TelegramBotService
 
 		private async Task BotOnTagAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(message.Chat.Id, $"Привет, {message.From.Username}.");
+			await _botClient.SendTextMessageAsync(message.Chat.Id, $"Привет, {message.From.FirstName}.");
 		}
 
-		//private async Task BotOnAddUser(Message message)
-		//{
-		//	if (message.Text == "/bg_AddUser")
-		//	{ 
-		//	//	var groups = await _groupRepository.GetAllGroupAsync();
-		//	//	foreach (var group in groups)
-		//	//	{
-		//	//		//выбор группы через inline
-		//	//	}
-		//	//}
-		//	//var groups = await _groupRepository.GetAllGroupAsync();
-		//	//if (groups.Any(g => g.Id == message.Chat.Id))
-		//	//	return;
+		private async Task BotOnAddUser(Message message, CallbackQuery callback)
+		{
+			InlineKeyboardMarkup addUserKeyboard = new(new[]
+				{
+					new[]
+					{
+						InlineKeyboardButton.WithCallbackData("ID", "UserId")
+					},
+					new []
+					{
+						InlineKeyboardButton.WithCallbackData("Имя", "UserUsername")
+					},
+					new []
+					{
+						InlineKeyboardButton.WithCallbackData("Тэг", "UserFirstName")
+					},
+					new []
+					{
+						InlineKeyboardButton.WithCallbackData("ID группы,\nв которой состоит пользователь", "GroupId")
+					}
+				}
+			);
+			await _botClient.SendTextMessageAsync(
+				message.Chat.Id,
+				"Введите данные пользователя",
+				replyToMessageId: message.MessageId,
+				replyMarkup: addUserKeyboard
+			);
 
-		//	//var adminMembers = await _botClient.GetChatAdministratorsAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/);
-		//	//var isMember = await _botClient.GetChatMembersAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/, message.ForwardFrom.Id);
-		//	//if (!isMember)
-		//	//{
-		//	//	await _botClient.SendTextMessageAsync(message.Chat.Id, "не состоите в группе");
-		//	//}
-		//	var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == message.ForwardFrom?.Id);
+			var handler = callback.Data switch
+			{
+				"UserId" => inlineUserId()
+			};
+			try
+			{
+				await handler;
+			}
+			catch (Exception exception)
+			{
+				throw exception;
+			}
+			//foreach (var group in await _groupRepository.GetAllGroupAsync())
+			//{
+			//	//выбор группы через inline
+			//	message.edit
+			//}
+			//var groups = await _groupRepository.GetAllGroupAsync();
+			//if (groups.Any(g => g.Id == message.Chat.Id))
+			//	return;
 
-		//	long? adminMemberId = null;
-		//	if (adminMember != null)
-		//		adminMemberId = /*получения от inline-клавы от пользователя, в какую группу добавить*/;
-		//	var gameOwner = new GameOwner(
-		//		message.ForwardFrom.Id,
-		//		message.ForwardFrom.FirstName,
-		//		adminMemberId,
-		//		/*получения от inline-клавы от пользователя, в какую группу добавить*/
-		//		message.ForwardFrom.Username,
-		//		null,
-		//		null,
-		//		null
-		//	);
-		//	await _gameOwnerRepository.CreateGameOwnerAsync(gameOwner);
+			//var adminMembers = await _botClient.GetChatAdministratorsAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/);
+			//var isMember = await _botClient.GetChatMembersAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/, message.ForwardFrom.Id);
+			//if (!isMember)
+			//{
+			//	await _botClient.SendTextMessageAsync(message.Chat.Id, "не состоите в группе");
+			//}
+			//var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == message.ForwardFrom?.Id);
 
-		//}
+			//	long? adminMemberId = null;
+			//	if (adminMember != null)
+			//		adminMemberId = /*получения от inline-клавы от пользователя, в какую группу добавить*/;
+			//	var gameOwner = new GameOwner(
+			//		message.ForwardFrom.Id,
+			//		message.ForwardFrom.FirstName,
+			//		adminMemberId,
+			//		/*получения от inline-клавы от пользователя, в какую группу добавить*/
+			//		message.ForwardFrom.Username,
+			//		null,
+			//		null,
+			//		null
+			//	);
+			//	await _gameOwnerRepository.CreateGameOwnerAsync(gameOwner);
+
+		}
+
+		private async Task inlineUserId()
+		{
+			throw new NotImplementedException();
+		}
 
 		private async Task BotOnLeftMemberAsync(User member, long groupId)
 		{
