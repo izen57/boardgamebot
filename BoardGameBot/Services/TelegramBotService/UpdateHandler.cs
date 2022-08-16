@@ -113,7 +113,8 @@ namespace TelegramBotService
 			var handler = message.Text switch
 			{
 				"@BoardGameQ_Bot" => BotOnTagAsync(message),
-				"/bg_adduser@BoardGameQ_Bot" => BotOnAddUser(message, update.CallbackQuery!)
+				"/bg_adduser@BoardGameQ_Bot" => BotOnAddUser(message, update.CallbackQuery!),
+				"/bg_adduser" => BotOnAddUser(message, update.CallbackQuery!)
 			};
 			try
 			{
@@ -132,82 +133,43 @@ namespace TelegramBotService
 
 		private async Task BotOnAddUser(Message message, CallbackQuery callback)
 		{
-			InlineKeyboardMarkup addUserKeyboard = new(new[]
-				{
-					new[]
-					{
-						InlineKeyboardButton.WithCallbackData("ID", "UserId")
-					},
-					new []
-					{
-						InlineKeyboardButton.WithCallbackData("Имя", "UserUsername")
-					},
-					new []
-					{
-						InlineKeyboardButton.WithCallbackData("Тэг", "UserFirstName")
-					},
-					new []
-					{
-						InlineKeyboardButton.WithCallbackData("ID группы,\nв которой состоит пользователь", "GroupId")
-					}
-				}
-			);
+			var inlinelist = new List<InlineKeyboardButton>();
+
+			foreach (var group in await _groupRepository.GetAllGroupAsync())
+			{
+				inlinelist.Add(InlineKeyboardButton.WithCallbackData(group.Name, $"group{group.Id}"));
+				//InlineKeyboardButton.WithCallbackData(group.Name, $"group{group.Id}");
+			}
 			await _botClient.SendTextMessageAsync(
 				message.Chat.Id,
-				"Введите данные пользователя",
+				"Выберите пользователя из списка",
 				replyToMessageId: message.MessageId,
-				replyMarkup: addUserKeyboard
+				replyMarkup: new InlineKeyboardMarkup(inlinelist)
 			);
 
-			var handler = callback.Data switch
-			{
-				"UserId" => inlineUserId()
-			};
-			try
-			{
-				await handler;
-			}
-			catch (Exception exception)
-			{
-				throw exception;
-			}
-			//foreach (var group in await _groupRepository.GetAllGroupAsync())
-			//{
-			//	//выбор группы через inline
-			//	message.edit
-			//}
-			//var groups = await _groupRepository.GetAllGroupAsync();
-			//if (groups.Any(g => g.Id == message.Chat.Id))
-			//	return;
+			var groups = await _groupRepository.GetAllGroupAsync();
+			if (groups.Any(g => g.Id == message.Chat.Id))
+				return;
+			var adminMembers = await _botClient.GetChatAdministratorsAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/callback.Data);
+			var isMember = await _botClient.GetChatMemberAsync(callback.Data, message.ForwardFrom.Id);
+			if (isMember == null)
+				await _botClient.SendTextMessageAsync(message.Chat.Id, "не состоит в группе");
+			var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == message.ForwardFrom?.Id);
 
-			//var adminMembers = await _botClient.GetChatAdministratorsAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/);
-			//var isMember = await _botClient.GetChatMembersAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/, message.ForwardFrom.Id);
-			//if (!isMember)
-			//{
-			//	await _botClient.SendTextMessageAsync(message.Chat.Id, "не состоите в группе");
-			//}
-			//var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == message.ForwardFrom?.Id);
-
-			//	long? adminMemberId = null;
-			//	if (adminMember != null)
-			//		adminMemberId = /*получения от inline-клавы от пользователя, в какую группу добавить*/;
-			//	var gameOwner = new GameOwner(
-			//		message.ForwardFrom.Id,
-			//		message.ForwardFrom.FirstName,
-			//		adminMemberId,
-			//		/*получения от inline-клавы от пользователя, в какую группу добавить*/
-			//		message.ForwardFrom.Username,
-			//		null,
-			//		null,
-			//		null
-			//	);
-			//	await _gameOwnerRepository.CreateGameOwnerAsync(gameOwner);
-
-		}
-
-		private async Task inlineUserId()
-		{
-			throw new NotImplementedException();
+			long? adminMemberId = null;
+			if (adminMember != null)
+				adminMemberId = long.Parse(callback.Data);
+			var gameOwner = new GameOwner(
+				message.ForwardFrom.Id,
+				message.ForwardFrom.FirstName,
+				adminMemberId,
+				long.Parse(callback.Data),
+				message.ForwardFrom.Username,
+				null,
+				null,
+				null
+			);
+			await _gameOwnerRepository.CreateGameOwnerAsync(gameOwner);
 		}
 
 		private async Task BotOnLeftMemberAsync(User member, long groupId)
