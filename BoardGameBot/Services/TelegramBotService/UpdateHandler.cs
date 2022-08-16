@@ -33,11 +33,15 @@ namespace TelegramBotService
 			_pollRepository = pollRepository;
 		}
 
+		/**
+		 * Обработка новых событий
+		 */
 		public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
 		{
 			_botClient = botClient;
 			var handler = update.Type switch
 			{
+				//UpdateType.te
 				UpdateType.Message =>
 					BotOnMessageReceivedAsync(update.Message!),
 				UpdateType.MyChatMember =>
@@ -53,10 +57,16 @@ namespace TelegramBotService
 			}
 		}
 
+		/**
+		 * Обработка событий, произошедших с самими ботом. Например,
+		 * когда он покидает группу или его исключают оттуда.
+		 */
 		private async Task BotOnMyChatMemberAsync(ChatMemberUpdated chatMember)
 		{
-			if (chatMember.NewChatMember.Status == ChatMemberStatus.Left || chatMember.NewChatMember.Status == ChatMemberStatus.Kicked)
+			if (chatMember.NewChatMember.Status == ChatMemberStatus.Left
+				|| chatMember.NewChatMember.Status == ChatMemberStatus.Kicked)
 				await _groupRepository.DeleteGroupAsync(chatMember.Chat.Id);
+
 			if (chatMember.NewChatMember.Status == ChatMemberStatus.Member)
 			{
 				var group = new Group(
@@ -69,10 +79,11 @@ namespace TelegramBotService
 				);
 				await _groupRepository.CreateGroupAsync(group);
 			}
-
 		}
 
-
+		/**
+		 * Обработка событий ботом в самом чате. Например: кто-то зашёл в группу или вышел оттуда, боту дали команду.
+		 */
 		private async Task BotOnMessageReceivedAsync(Message message)
 		{
 			var handler = message.Type switch
@@ -93,21 +104,29 @@ namespace TelegramBotService
 			}
 		}
 
+		/**
+		 * Обработка текстового сообщения, присланного боту.
+		 */
 		private async Task BotOnTextAsync(Message message)
 		{
-			//var handler = message.Text.ToLower() switch
-			//{
-			//	//"/bg_AddUser" => BotOnAddUser(message)
-			//};
-			//try
-			//{
-			//	await handler;
-			//}
-			//catch (Exception exception)
-			//{
-			//	throw exception;
-			//}
+			var handler = message.Text.ToLower() switch
+			{
+				"@BoardGameQ_Bot" => BotOnTagAsync(message),
+				//"@BoardGameQ_Bot, /bg_AddUser" => BotOnAddUser(message)
+			};
+			try
+			{
+				await handler;
+			}
+			catch (Exception exception)
+			{
+				throw exception;
+			}
+		}
 
+		private async Task BotOnTagAsync(Message message)
+		{
+			await _botClient.SendTextMessageAsync(message.Chat.Id, $"Привет, {message.From.Username}.");
 		}
 
 		//private async Task BotOnAddUser(Message message)
