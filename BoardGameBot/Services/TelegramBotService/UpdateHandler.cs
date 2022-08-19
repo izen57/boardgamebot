@@ -40,9 +40,9 @@ namespace TelegramBotService
 		public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
 		{
 			_botClient = botClient;
+
 			var handler = update.Type switch
 			{
-				//UpdateType.te
 				UpdateType.Message =>
 					BotOnMessageReceivedAsync(update.Message!, update),
 				UpdateType.MyChatMember =>
@@ -194,22 +194,20 @@ namespace TelegramBotService
 			var inlinelist = new List<InlineKeyboardButton>();
 
 			foreach (var group in await _groupRepository.GetAllGroupAsync())
-			{
 				inlinelist.Add(InlineKeyboardButton.WithCallbackData(group.Name, $"group{group.Id}"));
-				//InlineKeyboardButton.WithCallbackData(group.Name, $"group{group.Id}");
-			}
 			await _botClient.SendTextMessageAsync(
 				message.Chat.Id,
 				"Выберите группу из списка",
-				replyToMessageId: message.MessageId,
 				replyMarkup: new InlineKeyboardMarkup(inlinelist)
 			);
 
 			var groups = await _groupRepository.GetAllGroupAsync();
 			if (groups.Any(g => g.Id == message.Chat.Id))
 				return;
-			var adminMembers = await _botClient.GetChatAdministratorsAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/callback.Data);
-			var isMember = await _botClient.GetChatMemberAsync(callback.Data, message.Chat.Id);
+
+			var callbackId = new ChatId(callback.Data);
+			var adminMembers = await _botClient.GetChatAdministratorsAsync(callbackId);
+			var isMember = await _botClient.GetChatMemberAsync(callbackId, message.Chat.Id);
 			if (isMember == null)
 			{
 				await _botClient.SendTextMessageAsync(message.Chat.Id, "Вы не состоите в этой группе.");
@@ -219,12 +217,12 @@ namespace TelegramBotService
 
 			long? adminMemberId = null;
 			if (adminMember != null)
-				adminMemberId = long.Parse(callback.Data);
+				adminMemberId = long.Parse(callbackId);
 			var gameOwner = new GameOwner(
 				message.Chat.Id,
 				message.Chat.FirstName,
 				adminMemberId,
-				long.Parse(callback.Data),
+				long.Parse(callbackId),
 				message.Chat.Username,
 				null,
 				null,
@@ -233,8 +231,6 @@ namespace TelegramBotService
 			await _gameOwnerRepository.CreateGameOwnerAsync(gameOwner);
 			await _botClient.SendTextMessageAsync(message.Chat.Id, ", Вы добавлены в группу.");
 		}
-
-		// private async Task AddUser()
 
 		private async Task BotOnLeftMemberAsync(User member, long groupId)
 		{
