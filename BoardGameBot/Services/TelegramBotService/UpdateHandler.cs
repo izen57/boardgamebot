@@ -142,7 +142,7 @@ namespace TelegramBotService
 			}
 			await _botClient.SendTextMessageAsync(
 				message.Chat.Id,
-				"Выберите пользователя из списка",
+				"Выберите группу из списка",
 				replyToMessageId: message.MessageId,
 				replyMarkup: new InlineKeyboardMarkup(inlinelist)
 			);
@@ -151,26 +151,28 @@ namespace TelegramBotService
 			if (groups.Any(g => g.Id == message.Chat.Id))
 				return;
 			var adminMembers = await _botClient.GetChatAdministratorsAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/callback.Data);
-			var isMember = await _botClient.GetChatMemberAsync(callback.Data, message.ForwardFrom.Id);
+			var isMember = await _botClient.GetChatMemberAsync(callback.Data, message.Chat.Id);
 			if (isMember == null)
 				await _botClient.SendTextMessageAsync(message.Chat.Id, "не состоит в группе");
-			var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == message.ForwardFrom?.Id);
+			var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == message.Chat.Id);
 
 			long? adminMemberId = null;
 			if (adminMember != null)
 				adminMemberId = long.Parse(callback.Data);
 			var gameOwner = new GameOwner(
-				message.ForwardFrom.Id,
-				message.ForwardFrom.FirstName,
+				message.Chat.Id,
+				message.Chat.FirstName,
 				adminMemberId,
 				long.Parse(callback.Data),
-				message.ForwardFrom.Username,
+				message.Chat.Username,
 				null,
 				null,
 				null
 			);
 			await _gameOwnerRepository.CreateGameOwnerAsync(gameOwner);
 		}
+
+		// private async Task AddUser()
 
 		private async Task BotOnLeftMemberAsync(User member, long groupId)
 		{
