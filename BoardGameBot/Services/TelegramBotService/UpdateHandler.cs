@@ -114,7 +114,9 @@ namespace TelegramBotService
 			{
 				"@BoardGameQ_Bot" => BotOnTagAsync(message),
 				"/bg_adduser@BoardGameQ_Bot" => BotOnAddUser(message, update.CallbackQuery!),
-				"/bg_adduser" => BotOnAddUser(message, update.CallbackQuery!)
+				"/bg_adduser" => BotOnAddUser(message, update.CallbackQuery!),
+				// "/bg_creategame@BoardGameQ_Bot" => BotOnCreateGame(message, update.CallbackQuery!),
+				// "/bg_creategame" => BotOnCreateGame(message, update.CallbackQuery!),
 			};
 			try
 			{
@@ -130,6 +132,62 @@ namespace TelegramBotService
 		{
 			await _botClient.SendTextMessageAsync(message.Chat.Id, $"Привет, {message.From.FirstName}.");
 		}
+
+		/*private async Task BotOnCreateGame(Message message, CallbackQuery callback)
+		{
+			InlineKeyboardMarkup keyboard = new(new[]
+				{
+					new[]
+					{
+						InlineKeyboardButton.WithCallbackData("Название", "name"),
+						InlineKeyboardButton.WithCallbackData("Описание", "descr")
+					},
+					new[]
+					{
+						InlineKeyboardButton.WithCallbackData("Количество игроков", "gamers")
+					},
+					new[]
+					{
+						InlineKeyboardButton.WithCallbackData("Жанр", "genre"),
+						InlineKeyboardButton.WithCallbackData("Сложность", "complexity")
+					},
+					new[]
+					{
+						InlineKeyboardButton.WithCallbackData("Полезные ссылки", "links"),
+						InlineKeyboardButton.WithCallbackData("Правила", "rules")
+					},
+					new[]
+					{
+						InlineKeyboardButton.WithCallbackData("Сохранить", "save")
+					},
+					new[]
+					{
+						InlineKeyboardButton.WithCallbackData("Назад", "back")
+					}
+				}
+			);
+
+			var handler = callback.Data switch
+			{
+				"name" => GameNameEnter(message, keyboard),
+				"descr" => GameDescrEnter(message, keyboard),
+				"gamers" => GameGamersEnter(message, keyboard),
+				"genre" => GameGenreEnter(message, keyboard),
+				"complexity" => GameComplEnter(message, keyboard),
+				"links" => GameLinksEnter(message, keyboard),
+				"rules" => GameRulesEnter(message, keyboard),
+				"Save" => GameSave(message, keyboard),
+				"back" => KeyaboardReturn(message, keyboard)
+			};
+			try
+			{
+				await handler;
+			}
+			catch (Exception exception)
+			{
+				throw exception;
+			}
+		}*/
 
 		private async Task BotOnAddUser(Message message, CallbackQuery callback)
 		{
@@ -153,7 +211,10 @@ namespace TelegramBotService
 			var adminMembers = await _botClient.GetChatAdministratorsAsync(/*получения от inline-клавы от пользователя, в какую группу добавить*/callback.Data);
 			var isMember = await _botClient.GetChatMemberAsync(callback.Data, message.Chat.Id);
 			if (isMember == null)
-				await _botClient.SendTextMessageAsync(message.Chat.Id, "не состоит в группе");
+			{
+				await _botClient.SendTextMessageAsync(message.Chat.Id, "Вы не состоите в этой группе.");
+				return;
+			}
 			var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == message.Chat.Id);
 
 			long? adminMemberId = null;
@@ -170,6 +231,7 @@ namespace TelegramBotService
 				null
 			);
 			await _gameOwnerRepository.CreateGameOwnerAsync(gameOwner);
+			await _botClient.SendTextMessageAsync(message.Chat.Id, ", Вы добавлены в группу.");
 		}
 
 		// private async Task AddUser()
