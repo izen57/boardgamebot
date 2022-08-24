@@ -134,7 +134,13 @@ namespace TelegramBotService
 					throw exception;
 				}
 			}
-			else if (_chatStatus.Contains("Game"))
+			else
+				await EnterByStatus(message);
+		}
+
+		private async Task EnterByStatus(Message message)
+		{
+			if (_chatStatus.Contains("Game"))
 			{
 				if (_chatStatus == "GameTitle")
 				{
@@ -147,18 +153,72 @@ namespace TelegramBotService
 						replyMarkup: keyboard
 					);
 				}
-				//else if (_chatStatus == "GameDescr")
-				//	GameDescrEnterAsync(update, game);
-				//else if (_chatStatus == "GamePlayers")
-				//	GamePlayersEnterAsync(update, game);
-				//else if (_chatStatus == "GameGenre")
-				//	GameGenreEnterAsync(update, game);
-				//else if (_chatStatus == "GameComplexity")
-				//	GameComplexityEnterAsync(update, game);
-				//else if (_chatStatus == "GameLetsPlay")
-				//	GameLetsPlayEnterAsync(update, game);
-				//else if (_chatStatus == "GameLinks")
-				//	GameRulesEnterAsync(update, game);
+				else if (_chatStatus == "GameDescr")
+				{
+					_game.Description = message.Text;
+
+					var keyboard = GameKeyboard();
+					await _botClient.SendTextMessageAsync(
+						message.Chat.Id,
+						"Введите характеристики создаваемой игры.",
+						replyMarkup: keyboard
+					);
+				}
+				else if (_chatStatus == "GamePlayers")
+				{
+					_game.Players = message.Text;
+
+					var keyboard = GameKeyboard();
+					await _botClient.SendTextMessageAsync(
+						message.Chat.Id,
+						"Введите характеристики создаваемой игры.",
+						replyMarkup: keyboard
+					);
+				}
+				else if (_chatStatus == "GameGenre")
+				{
+					_game.Genre = message.Text;
+
+					var keyboard = GameKeyboard();
+					await _botClient.SendTextMessageAsync(
+						message.Chat.Id,
+						"Введите характеристики создаваемой игры.",
+						replyMarkup: keyboard
+					);
+				}
+				else if (_chatStatus == "GameComplexity")
+				{
+					_game.Complexity = int.Parse(message.Text);
+
+					var keyboard = GameKeyboard();
+					await _botClient.SendTextMessageAsync(
+						message.Chat.Id,
+						"Введите характеристики создаваемой игры.",
+						replyMarkup: keyboard
+					);
+				}
+				else if (_chatStatus == "GameLetsPlay")
+				{
+					_game.LetsPlay = message.Text;
+
+					var keyboard = GameKeyboard();
+					await _botClient.SendTextMessageAsync(
+						message.Chat.Id,
+						"Введите характеристики создаваемой игры.",
+						replyMarkup: keyboard
+					);
+				}
+				else if (_chatStatus == "GameRules")
+				{
+					_game.Rules = message.Text;
+
+					var keyboard = GameKeyboard();
+					await _botClient.SendTextMessageAsync(
+						message.Chat.Id,
+						"Введите характеристики создаваемой игры.",
+						replyMarkup: keyboard
+					);
+				}
 			}
 		}
 
@@ -174,14 +234,13 @@ namespace TelegramBotService
 			var handler = callback.Data switch
 			{
 				"title" => GameNameMessageAsync(message),
-					//"descr" => inputGameDescription = GameDescrEnterAsync(message, keyboard),
-					//"players" => inputGamePlayers = GamePlayersEnterAsync(message, keyboard),
-					//"genre" => inputGameGenre = GameGenreEnterAsync(message, keyboard),
-					//"complexity" => inputGameComplexity = GameComplEnterAsync(message, keyboard),
-					//"links" => inputGameLinks = GameLinksEnterAsync(message, keyboard),
-					//"rules" => inputGameRules = GameRulesEnterAsync(message, keyboard),
-					//"save" => GameSave(message, keyboard),
-					//"back" => KeyaboardReturn(message, keyboard)
+				"descr" => GameDescrMessageAsync(message),
+				"players" => GamePlayersMessageAsync(message),
+				"genre" => GameGenreMessageAsync(message),
+				"complexity" => GameComplMessageAsync(message),
+				"letplay" => GameLetsPlayMessageAsync(message),
+				"rules" => GameRulesMessageAsync(message),
+				"save" => GameSaveAsync(message)
 			};
 			try
 			{
@@ -231,46 +290,54 @@ namespace TelegramBotService
 			_chatStatus = "GameTitle";
 		}
 
-		private async Task GameDescrEnterAsync(Update update, CommonModels.Game game)
+		private async Task GameDescrMessageAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, введите описание создаваемой игры.");
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите описание создаваемой игры.");
 
-			game.Description = update.Message.Text;
+			_chatStatus = "GameDescr";
 		}
 
-		private async Task GamePlayersEnterAsync(Update update, CommonModels.Game game)
+		private async Task GamePlayersMessageAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, введите, сколько игроков может играть в создаваемую игру.");
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите, сколько игроков может играть в создаваемую игру.");
 
-			game.Players = update.Message.Text;
+			_chatStatus = "GamePlayers";
 		}
 
-		private async Task GameGenreEnterAsync(Update update, CommonModels.Game game)
+		private async Task GameGenreMessageAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, введите жанр создаваемой игры.");
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите жанр создаваемой игры.");
 
-			game.Genre = update.Message.Text;
+			_chatStatus = "GameGenre";
 		}
 
-		private async Task GameComplexityEnterAsync(Update update, CommonModels.Game game)
+		private async Task GameComplMessageAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, введите сложность (цифра не меньше 0) создаваемой игры.");
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите сложность (цифра не меньше 0) создаваемой игры.");
 
-			game.Complexity = int.Parse(update.Message.Text);
+			_chatStatus = "GameComplexity";
 		}
 
-		private async Task GameLetsPlayEnterAsync(Update update, CommonModels.Game game)
+		private async Task GameLetsPlayMessageAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, скопируйте ссылки на видео по создаваемой игры.");
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, скопируйте ссылки на видео по создаваемой игры.");
 
-			game.LetsPlay = update.Message.Text;
+			_chatStatus = "GameLetsPlay";
 		}
 
-		private async Task GameRulesEnterAsync(Update update, CommonModels.Game game)
+		private async Task GameRulesMessageAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, опишите правила создаваемой игры.");
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, опишите правила создаваемой игры.");
 
-			game.Rules = update.Message.Text;
+			_chatStatus = "GameRules";
+		}
+
+		private async Task GameSaveAsync(Message message)
+		{
+			await _gameRepository.CreateGameAsync(_game);
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Ваша игра сохранена.");
+
+			_chatStatus = "free";
 		}
 
 		private async Task BotOnTagAsync(Message message)
