@@ -1,5 +1,5 @@
 ﻿using BoardGameBot.Database.Adapter.Repositories.Interfaces;
-using BoardGameBot.Models;
+using CommonModels = BoardGameBot.Models;
 
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -133,18 +133,18 @@ namespace TelegramBotService
 			await _botClient.SendTextMessageAsync(message.Chat.Id, $"Привет, {message.From.FirstName}.");
 		}
 
-		/*private async Task BotOnCreateGame(Message message, CallbackQuery callback)
+		private async Task BotOnCreateGame(Message message, CallbackQuery callback)
 		{
 			InlineKeyboardMarkup keyboard = new(new[]
 				{
 					new[]
 					{
-						InlineKeyboardButton.WithCallbackData("Название", "name"),
+						InlineKeyboardButton.WithCallbackData("Название", "title"),
 						InlineKeyboardButton.WithCallbackData("Описание", "descr")
 					},
 					new[]
 					{
-						InlineKeyboardButton.WithCallbackData("Количество игроков", "gamers")
+						InlineKeyboardButton.WithCallbackData("Количество игроков", "players")
 					},
 					new[]
 					{
@@ -167,17 +167,25 @@ namespace TelegramBotService
 				}
 			);
 
+			string? inputGameTitle = null;
+			string? inputGameDescription = null;
+			string? inputGamePlayers = null;
+			string? inputGameGenre = null;
+			string? inputGameComplexity = null;
+			string? inputGameLinks = null;
+			string? inputGameRules = null;
+
 			var handler = callback.Data switch
 			{
-				"name" => GameNameEnter(message, keyboard),
-				"descr" => GameDescrEnter(message, keyboard),
-				"gamers" => GameGamersEnter(message, keyboard),
-				"genre" => GameGenreEnter(message, keyboard),
-				"complexity" => GameComplEnter(message, keyboard),
-				"links" => GameLinksEnter(message, keyboard),
-				"rules" => GameRulesEnter(message, keyboard),
-				"Save" => GameSave(message, keyboard),
-				"back" => KeyaboardReturn(message, keyboard)
+				"title" => inputGameTitle = await GameNameEnterAsync(message, keyboard),
+				//"descr" => inputGameDescription = GameDescrEnterAsync(message, keyboard),
+				//"players" => inputGamePlayers = GamePlayersEnterAsync(message, keyboard),
+				//"genre" => inputGameGenre = GameGenreEnterAsync(message, keyboard),
+				//"complexity" => inputGameComplexity = GameComplEnterAsync(message, keyboard),
+				//"links" => inputGameLinks = GameLinksEnterAsync(message, keyboard),
+				//"rules" => inputGameRules = GameRulesEnterAsync(message, keyboard),
+				//"save" => GameSave(message, keyboard),
+				//"back" => KeyaboardReturn(message, keyboard)
 			};
 			try
 			{
@@ -187,7 +195,15 @@ namespace TelegramBotService
 			{
 				throw exception;
 			}
-		}*/
+		}
+
+		private async Task<string> GameNameEnterAsync(Message message, InlineKeyboardMarkup keyboard)
+		{
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите название новой игры.");
+
+			//var gameName = await _botClient.get
+			return null;
+		}
 
 		private async Task BotOnAddUser(Message message, CallbackQuery callback)
 		{
