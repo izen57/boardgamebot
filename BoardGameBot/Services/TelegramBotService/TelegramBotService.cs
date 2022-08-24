@@ -48,7 +48,8 @@ namespace TelegramBotService
 			var receiverOptions = new ReceiverOptions
 			{
 				AllowedUpdates = Array.Empty<UpdateType>(),
-				ThrowPendingUpdates = true
+				ThrowPendingUpdates = true,
+				
 			};
 			using var cts = new CancellationTokenSource();
 			bot.StartReceiving(

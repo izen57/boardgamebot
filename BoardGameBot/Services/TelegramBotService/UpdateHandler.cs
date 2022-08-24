@@ -21,6 +21,8 @@ namespace TelegramBotService
 		private IGameRepository _gameRepository;
 		private IGroupRepository _groupRepository;
 		private IPollRepository _pollRepository;
+		private string _chatStatus;
+		private CommonModels.Game _game;
 
 		public UpdateHandler(IGameOwnerRepository gameOwnerRepository,
 			IGameRepository gameRepository,
@@ -32,6 +34,9 @@ namespace TelegramBotService
 			_gameRepository = gameRepository;
 			_groupRepository = groupRepository;
 			_pollRepository = pollRepository;
+
+			_chatStatus = "free";
+			_game = new CommonModels.Game();
 		}
 
 		/**
@@ -58,10 +63,10 @@ namespace TelegramBotService
 			}
 		}
 
-		/**
-		 * Обработка событий, произошедших с самими ботом. Например,
-		 * когда он покидает группу или его исключают оттуда.
-		 */
+			/**
+			 * Обработка событий, произошедших с самими ботом. Например,
+			 * когда он покидает группу или его исключают оттуда.
+			 */
 		private async Task BotOnMyChatMemberAsync(ChatMemberUpdated chatMember)
 		{
 			if (chatMember.NewChatMember.Status == ChatMemberStatus.Left
@@ -70,7 +75,7 @@ namespace TelegramBotService
 
 			if (chatMember.NewChatMember.Status == ChatMemberStatus.Member)
 			{
-				var group = new Group(
+				var group = new CommonModels.Group(
 					chatMember.Chat.Id,
 					chatMember.Chat.Title,
 					chatMember.Chat.Description,
@@ -110,13 +115,73 @@ namespace TelegramBotService
 		 */
 		private async Task BotOnTextAsync(Message message, Update update)
 		{
-			var handler = message.Text switch
+			if (_chatStatus == "free")
 			{
-				"@BoardGameQ_Bot" => BotOnTagAsync(message),
-				"/bg_adduser@BoardGameQ_Bot" => BotOnAddUser(message, update.CallbackQuery!),
-				"/bg_adduser" => BotOnAddUser(message, update.CallbackQuery!),
-				// "/bg_creategame@BoardGameQ_Bot" => BotOnCreateGame(message, update.CallbackQuery!),
-				// "/bg_creategame" => BotOnCreateGame(message, update.CallbackQuery!),
+				var handler = message.Text switch
+				{
+					"@BoardGameQ_Bot" => BotOnTagAsync(message),
+					"/bg_adduser@BoardGameQ_Bot" => BotOnAddUser(message, update.CallbackQuery!),
+					"/bg_adduser" => BotOnAddUser(message, update.CallbackQuery!),
+					//"/bg_creategame@BoardGameQ_Bot" => BotOnCreateGame(message, update.CallbackQuery!),
+					"/bg_creategame" => BotOnCreateGame(message, update.CallbackQuery!),
+				};
+				try
+				{
+					await handler;
+				}
+				catch (Exception exception)
+				{
+					throw exception;
+				}
+			}
+			else if (_chatStatus.Contains("Game"))
+			{
+				if (_chatStatus == "GameTitle")
+				{
+					_game.Title = message.Text;
+
+					var keyboard = GameKeyboard();
+					await _botClient.SendTextMessageAsync(
+						message.Chat.Id,
+						"Введите характеристики создаваемой игры.",
+						replyMarkup: keyboard
+					);
+				}
+				//else if (_chatStatus == "GameDescr")
+				//	GameDescrEnterAsync(update, game);
+				//else if (_chatStatus == "GamePlayers")
+				//	GamePlayersEnterAsync(update, game);
+				//else if (_chatStatus == "GameGenre")
+				//	GameGenreEnterAsync(update, game);
+				//else if (_chatStatus == "GameComplexity")
+				//	GameComplexityEnterAsync(update, game);
+				//else if (_chatStatus == "GameLetsPlay")
+				//	GameLetsPlayEnterAsync(update, game);
+				//else if (_chatStatus == "GameLinks")
+				//	GameRulesEnterAsync(update, game);
+			}
+		}
+
+		private async Task BotOnCreateGame(Message message, CallbackQuery callback)
+		{
+			var keyboard = GameKeyboard();
+			await _botClient.SendTextMessageAsync(
+				message.Chat.Id,
+				"Введите характеристики создаваемой игры.",
+				replyMarkup: keyboard
+			);
+
+			var handler = callback.Data switch
+			{
+				"title" => GameNameMessageAsync(message),
+					//"descr" => inputGameDescription = GameDescrEnterAsync(message, keyboard),
+					//"players" => inputGamePlayers = GamePlayersEnterAsync(message, keyboard),
+					//"genre" => inputGameGenre = GameGenreEnterAsync(message, keyboard),
+					//"complexity" => inputGameComplexity = GameComplEnterAsync(message, keyboard),
+					//"links" => inputGameLinks = GameLinksEnterAsync(message, keyboard),
+					//"rules" => inputGameRules = GameRulesEnterAsync(message, keyboard),
+					//"save" => GameSave(message, keyboard),
+					//"back" => KeyaboardReturn(message, keyboard)
 			};
 			try
 			{
@@ -128,81 +193,89 @@ namespace TelegramBotService
 			}
 		}
 
-		private async Task BotOnTagAsync(Message message)
+		private InlineKeyboardMarkup GameKeyboard()
 		{
-			await _botClient.SendTextMessageAsync(message.Chat.Id, $"Привет, {message.From.FirstName}.");
-		}
-
-		private async Task BotOnCreateGame(Message message, CallbackQuery callback)
-		{
-			InlineKeyboardMarkup keyboard = new(new[]
+			return new(new[]
 				{
 					new[]
 					{
-						InlineKeyboardButton.WithCallbackData("Название", "title"),
-						InlineKeyboardButton.WithCallbackData("Описание", "descr")
+						InlineKeyboardButton.WithCallbackData(_game.Title ?? "Название", "title"),
+						InlineKeyboardButton.WithCallbackData(_game.Description ?? "Описание", "descr")
 					},
 					new[]
 					{
-						InlineKeyboardButton.WithCallbackData("Количество игроков", "players")
+						InlineKeyboardButton.WithCallbackData(_game.Players ?? "Количество игроков", "players")
 					},
 					new[]
 					{
-						InlineKeyboardButton.WithCallbackData("Жанр", "genre"),
-						InlineKeyboardButton.WithCallbackData("Сложность", "complexity")
+						InlineKeyboardButton.WithCallbackData(_game.Genre ?? "Жанр", "genre"),
+						InlineKeyboardButton.WithCallbackData(_game.Complexity == -1 ? "Сложность" : _game.Complexity.ToString(), "complexity")
 					},
 					new[]
 					{
-						InlineKeyboardButton.WithCallbackData("Полезные ссылки", "links"),
-						InlineKeyboardButton.WithCallbackData("Правила", "rules")
+						InlineKeyboardButton.WithCallbackData(_game.LetsPlay ?? "Полезные ссылки", "links"),
+						InlineKeyboardButton.WithCallbackData(_game.Rules ?? "Правила", "rules")
 					},
 					new[]
 					{
 						InlineKeyboardButton.WithCallbackData("Сохранить", "save")
 					},
-					new[]
-					{
-						InlineKeyboardButton.WithCallbackData("Назад", "back")
-					}
 				}
 			);
-
-			string? inputGameTitle = null;
-			string? inputGameDescription = null;
-			string? inputGamePlayers = null;
-			string? inputGameGenre = null;
-			string? inputGameComplexity = null;
-			string? inputGameLinks = null;
-			string? inputGameRules = null;
-
-			var handler = callback.Data switch
-			{
-				"title" => inputGameTitle = await GameNameEnterAsync(message, keyboard),
-				//"descr" => inputGameDescription = GameDescrEnterAsync(message, keyboard),
-				//"players" => inputGamePlayers = GamePlayersEnterAsync(message, keyboard),
-				//"genre" => inputGameGenre = GameGenreEnterAsync(message, keyboard),
-				//"complexity" => inputGameComplexity = GameComplEnterAsync(message, keyboard),
-				//"links" => inputGameLinks = GameLinksEnterAsync(message, keyboard),
-				//"rules" => inputGameRules = GameRulesEnterAsync(message, keyboard),
-				//"save" => GameSave(message, keyboard),
-				//"back" => KeyaboardReturn(message, keyboard)
-			};
-			try
-			{
-				await handler;
-			}
-			catch (Exception exception)
-			{
-				throw exception;
-			}
 		}
 
-		private async Task<string> GameNameEnterAsync(Message message, InlineKeyboardMarkup keyboard)
+		private async Task GameNameMessageAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите название новой игры.");
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите название создаваемой игры.");
 
-			//var gameName = await _botClient.get
-			return null;
+			_chatStatus = "GameTitle";
+		}
+
+		private async Task GameDescrEnterAsync(Update update, CommonModels.Game game)
+		{
+			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, введите описание создаваемой игры.");
+
+			game.Description = update.Message.Text;
+		}
+
+		private async Task GamePlayersEnterAsync(Update update, CommonModels.Game game)
+		{
+			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, введите, сколько игроков может играть в создаваемую игру.");
+
+			game.Players = update.Message.Text;
+		}
+
+		private async Task GameGenreEnterAsync(Update update, CommonModels.Game game)
+		{
+			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, введите жанр создаваемой игры.");
+
+			game.Genre = update.Message.Text;
+		}
+
+		private async Task GameComplexityEnterAsync(Update update, CommonModels.Game game)
+		{
+			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, введите сложность (цифра не меньше 0) создаваемой игры.");
+
+			game.Complexity = int.Parse(update.Message.Text);
+		}
+
+		private async Task GameLetsPlayEnterAsync(Update update, CommonModels.Game game)
+		{
+			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, скопируйте ссылки на видео по создаваемой игры.");
+
+			game.LetsPlay = update.Message.Text;
+		}
+
+		private async Task GameRulesEnterAsync(Update update, CommonModels.Game game)
+		{
+			await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Отправив ответ на это сообщение, опишите правила создаваемой игры.");
+
+			game.Rules = update.Message.Text;
+		}
+
+		private async Task BotOnTagAsync(Message message)
+		{
+			await _botClient.SendTextMessageAsync(message.Chat.Id, $"Привет, {message.From.FirstName}.");
 		}
 
 		private async Task BotOnAddUser(Message message, CallbackQuery callback)
@@ -234,7 +307,7 @@ namespace TelegramBotService
 			long? adminMemberId = null;
 			if (adminMember != null)
 				adminMemberId = long.Parse(callbackId);
-			var gameOwner = new GameOwner(
+			var gameOwner = new CommonModels.GameOwner(
 				message.Chat.Id,
 				message.Chat.FirstName,
 				adminMemberId,
@@ -265,7 +338,7 @@ namespace TelegramBotService
 					long? adminMemberId = null;
 					if (adminMember != null)
 						adminMemberId = groupId;
-					var gameOwner = new GameOwner(
+					var gameOwner = new CommonModels.GameOwner(
 						member.Id,
 						member.FirstName,
 						adminMemberId,

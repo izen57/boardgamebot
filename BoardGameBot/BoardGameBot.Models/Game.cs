@@ -29,7 +29,7 @@
 		public string Description { get; set; }
 		public string Players { get; set; }
 		public string Genre { get; set; }
-		public int Complexity { get; set; }
+		public int Complexity { get; set; } = -1;
 		public string LetsPlay { get; set; }
 		public string Rules { get; set; }
 		public int Played { get; set; }
