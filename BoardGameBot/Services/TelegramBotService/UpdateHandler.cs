@@ -120,10 +120,10 @@ namespace TelegramBotService
 				var handler = message.Text switch
 				{
 					"@BoardGameQ_Bot" => BotOnTagAsync(message),
-					"/bg_adduser@BoardGameQ_Bot" => BotOnAddUser(message, update.CallbackQuery!),
-					"/bg_adduser" => BotOnAddUser(message, update.CallbackQuery!),
+					"/bg_adduser@BoardGameQ_Bot" => BotOnAddUser(message, update),
+					"/bg_adduser" => BotOnAddUser(message, update),
 					//"/bg_creategame@BoardGameQ_Bot" => BotOnCreateGame(message, update.CallbackQuery!),
-					"/bg_creategame" => BotOnCreateGame(message, update.CallbackQuery!),
+					"/bg_creategame" => BotOnCreateGame(message, update),
 				};
 				try
 				{
@@ -222,7 +222,7 @@ namespace TelegramBotService
 			}
 		}
 
-		private async Task BotOnCreateGame(Message message, CallbackQuery callback)
+		private async Task BotOnCreateGame(Message message, Update update)
 		{
 			var keyboard = GameKeyboard();
 			await _botClient.SendTextMessageAsync(
@@ -231,7 +231,7 @@ namespace TelegramBotService
 				replyMarkup: keyboard
 			);
 
-			var handler = callback.Data switch
+			var handler = update.CallbackQuery.Data switch
 			{
 				"title" => GameNameMessageAsync(message),
 				"descr" => GameDescrMessageAsync(message),
@@ -345,7 +345,7 @@ namespace TelegramBotService
 			await _botClient.SendTextMessageAsync(message.Chat.Id, $"Привет, {message.From.FirstName}.");
 		}
 
-		private async Task BotOnAddUser(Message message, CallbackQuery callback)
+		private async Task BotOnAddUser(Message message, Update update)
 		{
 			var inlinelist = new List<InlineKeyboardButton>();
 
@@ -361,7 +361,7 @@ namespace TelegramBotService
 			if (groups.Any(g => g.Id == message.Chat.Id))
 				return;
 
-			var callbackId = new ChatId(callback.Data);
+			var callbackId = new ChatId(update.CallbackQuery.Data);
 			var adminMembers = await _botClient.GetChatAdministratorsAsync(callbackId);
 			var isMember = await _botClient.GetChatMemberAsync(callbackId, message.Chat.Id);
 			if (isMember == null)
