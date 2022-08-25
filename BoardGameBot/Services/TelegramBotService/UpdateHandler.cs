@@ -96,7 +96,7 @@ namespace TelegramBotService
 			var handler = message.Type switch
 			{
 				MessageType.ChatMemberLeft =>
-					BotOnLeftMemberAsync(message.LeftChatMember!, message.Chat.Id),
+					BotOnLeftMemberAsync(message.LeftChatMember!),
 				MessageType.ChatMembersAdded =>
 					BotOnAddedMembersAsync(message.NewChatMembers!, message.Chat.Id),
 				MessageType.Text => BotOnTextAsync(message!),
