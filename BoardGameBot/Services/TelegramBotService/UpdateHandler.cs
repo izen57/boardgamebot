@@ -52,6 +52,7 @@ namespace TelegramBotService
 					BotOnMessageReceivedAsync(update.Message!, update),
 				UpdateType.MyChatMember =>
 					BotOnMyChatMemberAsync(update.MyChatMember!),
+				UpdateType.CallbackQuery => BotOnCallbackQuery(update.CallbackQuery),
 			};
 			try
 			{
@@ -63,10 +64,10 @@ namespace TelegramBotService
 			}
 		}
 
-			/**
-			 * Обработка событий, произошедших с самими ботом. Например,
-			 * когда он покидает группу или его исключают оттуда.
-			 */
+		/**
+		 * Обработка событий, произошедших с самими ботом. Например,
+		 * когда он покидает группу или его исключают оттуда.
+		 */
 		private async Task BotOnMyChatMemberAsync(ChatMemberUpdated chatMember)
 		{
 			if (chatMember.NewChatMember.Status == ChatMemberStatus.Left
@@ -123,7 +124,7 @@ namespace TelegramBotService
 					"/bg_adduser@BoardGameQ_Bot" => BotOnAddUser(message, update),
 					"/bg_adduser" => BotOnAddUser(message, update),
 					//"/bg_creategame@BoardGameQ_Bot" => BotOnCreateGame(message, update.CallbackQuery!),
-					"/bg_creategame" => BotOnCreateGame(message, update),
+					"/bg_creategame" => BotOnCreateGame(message),
 				};
 				try
 				{
@@ -136,6 +137,33 @@ namespace TelegramBotService
 			}
 			else
 				await EnterByStatus(message);
+		}
+
+		/**
+		 * Обработка событий от кнопок inline-клавиатуры.
+		 */
+		private async Task BotOnCallbackQuery(CallbackQuery callbackQuery)
+		{
+			var handler = callbackQuery.Data switch
+			{
+				"title" => GameNameMessageAsync(callbackQuery.Message),
+				"descr" => GameDescrMessageAsync(callbackQuery.Message),
+				"players" => GamePlayersMessageAsync(callbackQuery.Message),
+				"genre" => GameGenreMessageAsync(callbackQuery.Message),
+				"complexity" => GameComplMessageAsync(callbackQuery.Message),
+				"letplay" => GameLetsPlayMessageAsync(callbackQuery.Message),
+				"rules" => GameRulesMessageAsync(callbackQuery.Message),
+				"save" => GameSaveAsync(callbackQuery.Message),
+				string s when s.Contains("group") => AddUser(callbackQuery),
+			};
+			try
+			{
+				await handler;
+			}
+			catch (Exception exception)
+			{
+				throw exception;
+			}
 		}
 
 		private async Task EnterByStatus(Message message)
@@ -222,7 +250,7 @@ namespace TelegramBotService
 			}
 		}
 
-		private async Task BotOnCreateGame(Message message, Update update)
+		private async Task BotOnCreateGame(Message message)
 		{
 			var keyboard = GameKeyboard();
 			await _botClient.SendTextMessageAsync(
@@ -230,26 +258,7 @@ namespace TelegramBotService
 				"Введите характеристики создаваемой игры.",
 				replyMarkup: keyboard
 			);
-
-			var handler = update.CallbackQuery.Data switch
-			{
-				"title" => GameNameMessageAsync(message),
-				"descr" => GameDescrMessageAsync(message),
-				"players" => GamePlayersMessageAsync(message),
-				"genre" => GameGenreMessageAsync(message),
-				"complexity" => GameComplMessageAsync(message),
-				"letplay" => GameLetsPlayMessageAsync(message),
-				"rules" => GameRulesMessageAsync(message),
-				"save" => GameSaveAsync(message)
-			};
-			try
-			{
-				await handler;
-			}
-			catch (Exception exception)
-			{
-				throw exception;
-			}
+			_chatStatus = "Game";
 		}
 
 		private InlineKeyboardMarkup GameKeyboard()
@@ -356,36 +365,39 @@ namespace TelegramBotService
 				"Выберите группу из списка",
 				replyMarkup: new InlineKeyboardMarkup(inlinelist)
 			);
+		}
 
+		private async Task AddUser(CallbackQuery callback)
+		{
 			var groups = await _groupRepository.GetAllGroupAsync();
-			if (groups.Any(g => g.Id == message.Chat.Id))
+			if (groups.Any(g => g.Id == callback.Message.Chat.Id))
 				return;
 
-			var callbackId = new ChatId(update.CallbackQuery.Data);
+			var callbackId = new ChatId(callback.Data);
 			var adminMembers = await _botClient.GetChatAdministratorsAsync(callbackId);
-			var isMember = await _botClient.GetChatMemberAsync(callbackId, message.Chat.Id);
+			var isMember = await _botClient.GetChatMemberAsync(callbackId, callback.Message.Chat.Id);
 			if (isMember == null)
 			{
-				await _botClient.SendTextMessageAsync(message.Chat.Id, "Вы не состоите в этой группе.");
+				await _botClient.SendTextMessageAsync(callback.Message.Chat.Id, "Вы не состоите в этой группе.");
 				return;
 			}
-			var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == message.Chat.Id);
+			var adminMember = adminMembers.FirstOrDefault(m => m.User.Id == callback.Message.Chat.Id);
 
 			long? adminMemberId = null;
 			if (adminMember != null)
 				adminMemberId = long.Parse(callbackId);
 			var gameOwner = new CommonModels.GameOwner(
-				message.Chat.Id,
-				message.Chat.FirstName,
+				callback.Message.Chat.Id,
+				callback.Message.Chat.FirstName,
 				adminMemberId,
 				long.Parse(callbackId),
-				message.Chat.Username,
+				callback.Message.Chat.Username,
 				null,
 				null,
 				null
 			);
 			await _gameOwnerRepository.CreateGameOwnerAsync(gameOwner);
-			await _botClient.SendTextMessageAsync(message.Chat.Id, ", Вы добавлены в группу.");
+			await _botClient.SendTextMessageAsync(callback.Message.Chat.Id, ", Вы добавлены в группу.");
 		}
 
 		private async Task BotOnLeftMemberAsync(User member, long groupId)
