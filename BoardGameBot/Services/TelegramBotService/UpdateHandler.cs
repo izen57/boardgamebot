@@ -1,4 +1,6 @@
-﻿using BoardGameBot.Database.Adapter.Repositories.Interfaces;
+﻿using System.Linq;
+
+using BoardGameBot.Database.Adapter.Repositories.Interfaces;
 using CommonModels = BoardGameBot.Models;
 
 using Telegram.Bot;
@@ -23,6 +25,7 @@ namespace TelegramBotService
 		private IPollRepository _pollRepository;
 		private string _chatStatus;
 		private CommonModels.Game _game;
+		private CommonModels.Poll _poll;
 
 		public UpdateHandler(IGameOwnerRepository gameOwnerRepository,
 			IGameRepository gameRepository,
@@ -49,7 +52,7 @@ namespace TelegramBotService
 			var handler = update.Type switch
 			{
 				UpdateType.Message =>
-					BotOnMessageReceivedAsync(update.Message!, update),
+					BotOnMessageReceivedAsync(update.Message!),
 				UpdateType.MyChatMember =>
 					BotOnMyChatMemberAsync(update.MyChatMember!),
 				UpdateType.CallbackQuery => BotOnCallbackQuery(update.CallbackQuery),
@@ -91,7 +94,7 @@ namespace TelegramBotService
 		/**
 		 * Обработка событий ботом в самом чате. Например: кто-то зашёл в группу или вышел оттуда, боту дали команду.
 		 */
-		private async Task BotOnMessageReceivedAsync(Message message, Update update)
+		private async Task BotOnMessageReceivedAsync(Message message)
 		{
 			var handler = message.Type switch
 			{
@@ -121,11 +124,11 @@ namespace TelegramBotService
 				var handler = message.Text switch
 				{
 					"@BoardGameQ_Bot" => BotOnTagAsync(message),
-					"/bg_adduser@BoardGameQ_Bot" => BotOnAddUser(message),
-					"/bg_adduser" => BotOnAddUser(message),
+					"/bg_adduser@BoardGameQ_Bot" or "/bg_adduser" => BotOnAddUserAsync(message),
 					//"/bg_creategame@BoardGameQ_Bot" => BotOnCreateGame(message, update.CallbackQuery!),
-					"/bg_creategame" => BotOnCreateGame(message),
-					"/bg_addgame" => BotOnAddGame(message),
+					"/bg_creategame" => BotOnCreateGameAsync(message),
+					"/bg_addgame" => BotOnAddGameAsync(message),
+					"/bg_createpoll" => BotOnCreatePollAsync(message),
 				};
 				try
 				{
@@ -136,8 +139,10 @@ namespace TelegramBotService
 					throw exception;
 				}
 			}
-			else
-				await EnterByStatus(message);
+			else if (_chatStatus.Contains("Game"))
+				await EnterGameByStatusAsync(message);
+			else if (_chatStatus.Contains("Poll"))
+				await EnterPollByStatusAsync(message);
 		}
 
 		/**
@@ -147,19 +152,23 @@ namespace TelegramBotService
 		{
 			var handler = callbackQuery.Data switch
 			{
-				"title" => GameNameMessageAsync(callbackQuery.Message),
-				"descr" => GameDescrMessageAsync(callbackQuery.Message),
-				"players" => GamePlayersMessageAsync(callbackQuery.Message),
-				"genre" => GameGenreMessageAsync(callbackQuery.Message),
-				"complexity" => GameComplMessageAsync(callbackQuery.Message),
-				"letplay" => GameLetsPlayMessageAsync(callbackQuery.Message),
-				"rules" => GameRulesMessageAsync(callbackQuery.Message),
-				"save" => GameSaveAsync(callbackQuery.Message),
+				"gametitle" => GameTitleMessageAsync(callbackQuery.Message),
+				"gamedescr" => GameDescrMessageAsync(callbackQuery.Message),
+				"gameplayers" => GamePlayersMessageAsync(callbackQuery.Message),
+				"gamegenre" => GameGenreMessageAsync(callbackQuery.Message),
+				"gamecomplexity" => GameComplMessageAsync(callbackQuery.Message),
+				"gamelinks" => GameLinksMessageAsync(callbackQuery.Message),
+				"gamerules" => GameRulesMessageAsync(callbackQuery.Message),
+				"gamesave" => GameSaveAsync(callbackQuery.Message),
 				"gameyes" => AddUserOnGameAsync(callbackQuery),
 				"gameno" => _botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Игра уже создана."),
 				string s when s.Contains("group") => AddUserAsync(callbackQuery),
 				string s when s.Contains("game") => AddUserOnGameAsync(callbackQuery),
-
+				"pollname" => PollNameMessageAsync(callbackQuery.Message),
+				"polltime" => PollTimeMessageAsync(callbackQuery.Message),
+				"pollinterval" => PollIntervalMessageAsync(callbackQuery.Message),
+				"pollgroup" => PollGroupMessageAsync(callbackQuery.Message),
+				"pollsave" => PollSaveMessageAsync(callbackQuery.Message)
 			};
 			try
 			{
@@ -171,7 +180,7 @@ namespace TelegramBotService
 			}
 		}
 
-		private async Task BotOnAddGame(Message message)
+		private async Task BotOnAddGameAsync(Message message)
 		{
 			var inlinelist = new List<InlineKeyboardButton>();
 
@@ -184,91 +193,153 @@ namespace TelegramBotService
 			);
 		}
 
-		private async Task EnterByStatus(Message message)
+		private async Task BotOnCreatePollAsync(Message message)
 		{
-			if (_chatStatus.Contains("Game"))
+			var keyboard = PollKeyboard();
+			await _botClient.SendTextMessageAsync(
+				message.Chat.Id,
+				"Введите характеристики опроса.",
+				replyMarkup: keyboard
+			);
+			_chatStatus = "Poll";
+		}
+
+		private async Task EnterPollByStatusAsync(Message message)
+		{
+			if (_chatStatus == "PollName")
 			{
-				if (_chatStatus == "GameTitle")
-				{
-					_game.Title = message.Text;
+				_poll.Name = message.Text;
 
-					var keyboard = GameKeyboard();
-					await _botClient.SendTextMessageAsync(
-						message.Chat.Id,
-						"Введите характеристики создаваемой игры.",
-						replyMarkup: keyboard
-					);
-				}
-				else if (_chatStatus == "GameDescr")
-				{
-					_game.Description = message.Text;
+				var keyboard = PollKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики опроса.",
+					replyMarkup: keyboard
+				);
+			}
+			else if (_chatStatus == "PollTime")
+			{
+				_poll.Time = Convert.ToDateTime(message.Text);
 
-					var keyboard = GameKeyboard();
-					await _botClient.SendTextMessageAsync(
-						message.Chat.Id,
-						"Введите характеристики создаваемой игры.",
-						replyMarkup: keyboard
-					);
-				}
-				else if (_chatStatus == "GamePlayers")
-				{
-					_game.Players = message.Text;
+				var keyboard = PollKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики опроса.",
+					replyMarkup: keyboard
+				);
+			}
+			else if (_chatStatus == "PollInterval")
+			{
+				_poll.DayInterval = int.Parse(message.Text);
 
-					var keyboard = GameKeyboard();
-					await _botClient.SendTextMessageAsync(
-						message.Chat.Id,
-						"Введите характеристики создаваемой игры.",
-						replyMarkup: keyboard
-					);
-				}
-				else if (_chatStatus == "GameGenre")
-				{
-					_game.Genre = message.Text;
+				var keyboard = PollKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики опроса.",
+					replyMarkup: keyboard
+				);
+			}
+			else if (_chatStatus == "PollGroup")
+			{
+				_poll.GroupId = message.Chat.Id;
+				_poll.Group.Id = message.Chat.Id;
+				_poll.Group.Name = message.Text;
+				_poll.Group.Description = message.Chat.Description;
+				_poll.Group.Members = null;
+				_poll.Group.Admins = null;
+				_poll.Group.Polls.Add(_poll);
 
-					var keyboard = GameKeyboard();
-					await _botClient.SendTextMessageAsync(
-						message.Chat.Id,
-						"Введите характеристики создаваемой игры.",
-						replyMarkup: keyboard
-					);
-				}
-				else if (_chatStatus == "GameComplexity")
-				{
-					_game.Complexity = int.Parse(message.Text);
-
-					var keyboard = GameKeyboard();
-					await _botClient.SendTextMessageAsync(
-						message.Chat.Id,
-						"Введите характеристики создаваемой игры.",
-						replyMarkup: keyboard
-					);
-				}
-				else if (_chatStatus == "GameLetsPlay")
-				{
-					_game.LetsPlay = message.Text;
-
-					var keyboard = GameKeyboard();
-					await _botClient.SendTextMessageAsync(
-						message.Chat.Id,
-						"Введите характеристики создаваемой игры.",
-						replyMarkup: keyboard
-					);
-				}
-				else if (_chatStatus == "GameRules")
-				{
-					_game.Rules = message.Text;
-
-					var keyboard = GameKeyboard();
-					await _botClient.SendTextMessageAsync(
-						message.Chat.Id,
-						"Введите характеристики создаваемой игры.",
-						replyMarkup: keyboard
-					);
-				}
+				var keyboard = PollKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики опроса.",
+					replyMarkup: keyboard
+				);
 			}
 		}
 
-		private async Task BotOnCreateGame(Message message)
+		private async Task EnterGameByStatusAsync(Message message)
+		{
+			if (_chatStatus == "GameTitle")
+			{
+				_game.Title = message.Text;
+
+				var keyboard = GameKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики создаваемой игры.",
+					replyMarkup: keyboard
+				);
+			}
+			else if (_chatStatus == "GameDescr")
+			{
+				_game.Description = message.Text;
+
+				var keyboard = GameKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики создаваемой игры.",
+					replyMarkup: keyboard
+				);
+			}
+			else if (_chatStatus == "GamePlayers")
+			{
+				_game.Players = message.Text;
+
+				var keyboard = GameKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики создаваемой игры.",
+					replyMarkup: keyboard
+				);
+			}
+			else if (_chatStatus == "GameGenre")
+			{
+				_game.Genre = message.Text;
+
+				var keyboard = GameKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики создаваемой игры.",
+					replyMarkup: keyboard
+				);
+			}
+			else if (_chatStatus == "GameComplexity")
+			{
+				_game.Complexity = int.Parse(message.Text);
+
+				var keyboard = GameKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики создаваемой игры.",
+					replyMarkup: keyboard
+				);
+			}
+			else if (_chatStatus == "GameLetsPlay")
+			{
+				_game.LetsPlay = message.Text;
+
+				var keyboard = GameKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики создаваемой игры.",
+					replyMarkup: keyboard
+				);
+			}
+			else if (_chatStatus == "GameRules")
+			{
+				_game.Rules = message.Text;
+
+				var keyboard = GameKeyboard();
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"Введите характеристики создаваемой игры.",
+					replyMarkup: keyboard
+				);
+			}
+		}
+
+		private async Task BotOnCreateGameAsync(Message message)
 		{
 			var keyboard = GameKeyboard();
 			await _botClient.SendTextMessageAsync(
@@ -285,32 +356,54 @@ namespace TelegramBotService
 				{
 					new[]
 					{
-						InlineKeyboardButton.WithCallbackData(_game.Title ?? "Название", "title"),
-						InlineKeyboardButton.WithCallbackData(_game.Description ?? "Описание", "descr")
+						InlineKeyboardButton.WithCallbackData(_game.Title ?? "Название", "gametitle"),
+						InlineKeyboardButton.WithCallbackData(_game.Description ?? "Описание", "gamedescr")
 					},
 					new[]
 					{
-						InlineKeyboardButton.WithCallbackData(_game.Players ?? "Количество игроков", "players")
+						InlineKeyboardButton.WithCallbackData(_game.Players ?? "Количество игроков", "gameplayers")
 					},
 					new[]
 					{
 						InlineKeyboardButton.WithCallbackData(_game.Genre ?? "Жанр", "genre"),
-						InlineKeyboardButton.WithCallbackData(_game.Complexity == -1 ? "Сложность" : _game.Complexity.ToString(), "complexity")
+						InlineKeyboardButton.WithCallbackData(_game.Complexity == -1 ? "Сложность" : _game.Complexity.ToString(), "gamecomplexity")
 					},
 					new[]
 					{
 						InlineKeyboardButton.WithCallbackData(_game.LetsPlay ?? "Полезные ссылки", "links"),
-						InlineKeyboardButton.WithCallbackData(_game.Rules ?? "Правила", "rules")
+						InlineKeyboardButton.WithCallbackData(_game.Rules ?? "Правила", "gamerules")
 					},
 					new[]
 					{
-						InlineKeyboardButton.WithCallbackData("Сохранить", "save")
+						InlineKeyboardButton.WithCallbackData("Сохранить", "gamesave")
 					},
 				}
 			);
 		}
 
-		private async Task GameNameMessageAsync(Message message)
+		private InlineKeyboardMarkup PollKeyboard()
+		{
+			return new(new[]
+				{
+					new[]
+					{
+						InlineKeyboardButton.WithCallbackData(_poll.Name ?? "Название", "pollname"),
+						InlineKeyboardButton.WithCallbackData(_poll.Time.ToString() ?? "Время опроса", "polltime")
+					},
+					new[]
+					{
+						InlineKeyboardButton.WithCallbackData(_poll.DayInterval == 0 ? "Дневной интервал" : _poll.DayInterval.ToString() , "pollinterval"),
+						InlineKeyboardButton.WithCallbackData(_poll.Group.Name ?? "Группа опроса", "pollgroup")
+					},
+					new[]
+					{
+						InlineKeyboardButton.WithCallbackData("Сохранить опрос", "pollsave")
+					}
+				}
+			);
+		}
+
+		private async Task GameTitleMessageAsync(Message message)
 		{
 			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите название создаваемой игры.");
 
@@ -345,7 +438,7 @@ namespace TelegramBotService
 			_chatStatus = "GameComplexity";
 		}
 
-		private async Task GameLetsPlayMessageAsync(Message message)
+		private async Task GameLinksMessageAsync(Message message)
 		{
 			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, скопируйте ссылки на видео по создаваемой игры.");
 
@@ -365,7 +458,6 @@ namespace TelegramBotService
 			await _botClient.SendTextMessageAsync(
 				message.Chat.Id,
 				"Игра сохранена.\n\n" +
-				"Ваша игра:\n" +
 				$"Название: {_game.Title}\n" +
 				$"Описание: {_game.Description}\n" +
 				$"Количество игроков: {_game.Players}\n" +
@@ -373,14 +465,14 @@ namespace TelegramBotService
 				$"Сложность: {_game.Complexity}\n" +
 				$"Правила: {_game.Rules}\n" +
 				$"Полезные ссылки: {_game.LetsPlay}\n" +
-				$"Владельцы этой игры: {(_game.GameOwners == null ? _game.GameOwners : "нету")}\n" +
+				$"Владельцы этой игры: {(_game.GameOwners == null ? "нету" : _game.GameOwners)}\n" +
 				"Хотите стать одним из её владельцев (да/нет)?",
 				replyMarkup: new InlineKeyboardMarkup(new[]
 					{
 						new[]
 						{
-							InlineKeyboardButton.WithCallbackData(_game.Title ?? "Да", "gameyes"),
-							InlineKeyboardButton.WithCallbackData(_game.Description ?? "Нет", "gameno")
+							InlineKeyboardButton.WithCallbackData("Да", "gameyes"),
+							InlineKeyboardButton.WithCallbackData("Нет", "gameno")
 						}
 					}
 				)
@@ -389,12 +481,66 @@ namespace TelegramBotService
 			_chatStatus = "free";
 		}
 
+		private async Task PollNameMessageAsync(Message message)
+		{
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите название опроса.");
+
+			_chatStatus = "PollName";
+		}
+
+		private async Task PollTimeMessageAsync(Message message)
+		{
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите время появления опроса.");
+
+			_chatStatus = "PollTime";
+		}
+
+		private async Task PollIntervalMessageAsync(Message message)
+		{
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите временной интервал опроса.");
+
+			_chatStatus = "PollInterval";
+		}
+
+		private async Task PollGroupMessageAsync(Message message)
+		{
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите название группы, где будет проходить этот опрос.");
+
+			_chatStatus = "PollGroup";
+		}
+
+		private async Task PollSaveMessageAsync(Message message)
+		{
+			await _pollRepository.CreatePollAsync(_poll);
+
+			await _botClient.SendTextMessageAsync(
+				message.Chat.Id,
+				"Ваш опрос сохранён.\n\n" +
+				$"Название: {_poll.Name}\n" +
+				$"Время опроса: {_poll.Time}\n" +
+				$"Опрос будет открытым в течение: {_poll.DayInterval}\n" +
+				$"Группа, закреплённая за опросом: {_poll.Group.Name}\n"
+			);
+			var poll = await _botClient.SendPollAsync(
+				_poll.GroupId,
+				"Игры на сегодня",
+				(await _gameRepository.GetAllGamesAsync())
+					.Select(x => x.Title)
+					.ToArray(),
+				allowsMultipleAnswers: true,
+				openPeriod: _poll.DayInterval
+			);
+
+			_chatStatus = "free";
+		}
+
+
 		private async Task BotOnTagAsync(Message message)
 		{
 			await _botClient.SendTextMessageAsync(message.Chat.Id, $"Привет, {message.From.FirstName}.");
 		}
 
-		private async Task BotOnAddUser(Message message)
+		private async Task BotOnAddUserAsync(Message message)
 		{
 			var inlinelist = new List<InlineKeyboardButton>();
 

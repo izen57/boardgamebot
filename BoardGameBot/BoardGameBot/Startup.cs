@@ -4,7 +4,6 @@ using BoardGameBot.Database.Adapter.Extensions;
 using BoardGameBot.Database.PostgreSQL;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 using TelegramBotService.Extensions;
 
