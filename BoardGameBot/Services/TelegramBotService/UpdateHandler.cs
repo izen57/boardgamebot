@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-using BoardGameBot.Database.Adapter.Repositories.Interfaces;
+﻿using BoardGameBot.Database.Adapter.Repositories.Interfaces;
 using CommonModels = BoardGameBot.Models;
 
 using Telegram.Bot;
@@ -48,6 +46,26 @@ namespace TelegramBotService
 		public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
 		{
 			_botClient = botClient;
+
+			foreach (var group in await _groupRepository.GetAllGroupAsync())
+			{
+				if (group == null)
+					break;
+				else
+					foreach (var poll in group.Polls)
+						if (poll != null && poll.Time == DateTime.Now)
+							await _botClient.SendPollAsync(
+								_poll.GroupId,
+								"Игры на сегодня",
+								(await _gameRepository.GetAllGamesAsync())
+									.Select(x => x.Title)
+									.ToArray(),
+								allowsMultipleAnswers: true,
+								openPeriod: _poll.DayInterval
+							);
+						else
+							break;
+			}
 
 			var handler = update.Type switch
 			{
@@ -123,11 +141,11 @@ namespace TelegramBotService
 			{
 				var handler = message.Text switch
 				{
-					"@BoardGameQ_Bot" => BotOnTagAsync(message),
-					"/bg_adduser@BoardGameQ_Bot" or "/bg_adduser" => BotOnAddUserAsync(message),
+					"@bgame1_bot" or "/start" or "/help"=> BotOnTagAsync(message),
+					"/bg_adduser@bgame1_bot" or "/bg_adduser" => BotOnAddUserAsync(message),
 					//"/bg_creategame@BoardGameQ_Bot" => BotOnCreateGame(message, update.CallbackQuery!),
 					"/bg_creategame" => BotOnCreateGameAsync(message),
-					"/bg_addgame" => BotOnAddGameAsync(message),
+					"/bg_adduserongame" => BotOnAddGameAsync(message),
 					"/bg_createpoll" => BotOnCreatePollAsync(message),
 				};
 				try
@@ -195,6 +213,15 @@ namespace TelegramBotService
 
 		private async Task BotOnCreatePollAsync(Message message)
 		{
+			if ((await _botClient.GetChatMemberAsync(message.Chat.Id, message.From.Id)).Status != ChatMemberStatus.Administrator)
+			{
+				await _botClient.SendTextMessageAsync(
+					message.Chat.Id,
+					"У Вас недостаточно прав для создания опроса."
+				);
+				return;
+			}
+
 			var keyboard = PollKeyboard();
 			await _botClient.SendTextMessageAsync(
 				message.Chat.Id,
@@ -521,15 +548,6 @@ namespace TelegramBotService
 				$"Опрос будет открытым в течение: {_poll.DayInterval}\n" +
 				$"Группа, закреплённая за опросом: {_poll.Group.Name}\n"
 			);
-			var poll = await _botClient.SendPollAsync(
-				_poll.GroupId,
-				"Игры на сегодня",
-				(await _gameRepository.GetAllGamesAsync())
-					.Select(x => x.Title)
-					.ToArray(),
-				allowsMultipleAnswers: true,
-				openPeriod: _poll.DayInterval
-			);
 
 			_chatStatus = "free";
 		}
@@ -537,7 +555,14 @@ namespace TelegramBotService
 
 		private async Task BotOnTagAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(message.Chat.Id, $"Привет, {message.From.FirstName}.");
+			await _botClient.SendTextMessageAsync(
+				message.Chat.Id,
+				"Это бот для организации совместных игр.\n\n" +
+				"Напишите /bg_adduser для добавления пользователя к группе играющих, той в которой вызвали эту команду\n" +
+				"Напишите /bg_creategame для создания новой игры\n" +
+				"Напишите /bg_adduserongame, чтобы прикрепить пользователя к игре.\n" +
+				"Напишите /bg_createpoll, чтобы создать повторяющийся опрос."
+			);
 		}
 
 		private async Task BotOnAddUserAsync(Message message)
@@ -604,7 +629,7 @@ namespace TelegramBotService
 			await _gameRepository.EditGameAsync(_game);
 			await _botClient.SendTextMessageAsync(
 				callback.Message.Chat.Id,
-				"Теперь Вы владелец этой игры."
+				"Теперь Вы - владелец этой игры."
 			);
 			_chatStatus = "free";
 		}
