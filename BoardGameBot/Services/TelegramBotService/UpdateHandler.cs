@@ -517,14 +517,14 @@ namespace TelegramBotService
 
 		private async Task PollTimeMessageAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите время появления опроса.");
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите время отправки опроса.");
 
 			_chatStatus = "PollTime";
 		}
 
 		private async Task PollIntervalMessageAsync(Message message)
 		{
-			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, введите временной интервал опроса.");
+			await _botClient.SendTextMessageAsync(message.Chat.Id, "Отправив ответ на это сообщение, укажите сколько секунд будет открыт опрос (от 5 до 600).");
 
 			_chatStatus = "PollInterval";
 		}
