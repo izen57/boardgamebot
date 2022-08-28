@@ -1,5 +1,4 @@
-﻿
-using BoardGameBot.Models;
+﻿using BoardGameBot.Models;
 
 namespace BoardGameBot.Database.Adapter.Repositories.Interfaces
 {
@@ -10,6 +9,5 @@ namespace BoardGameBot.Database.Adapter.Repositories.Interfaces
 		Task EditGameOwnerAsync(GameOwner gameOwner);
 		Task<List<GameOwner>> GetAllGameOwnersAsync();
 		Task<bool> DeleteGameOwnerAsync(long id);
-
 	}
 }

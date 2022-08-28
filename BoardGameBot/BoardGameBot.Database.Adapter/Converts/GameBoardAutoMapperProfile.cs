@@ -33,8 +33,6 @@ namespace BoardGameBot.Database.Adapter.Converts
               x => x.MapFrom(y => y.Group)
             );
 
-            /////
-
             CreateMap<CommonModels.Game, DBModels.Game>().ForMember(
             x => x.GameOwners,
               x => x.MapFrom(y => y.GameOwners)
