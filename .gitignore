@@ -437,7 +437,7 @@ fabric.properties
 ### VisualStudio ###
 
 # User-specific files
-
+/BoardGameBot/BoardGameBot/appsettings.json
 # User-specific files (MonoDevelop/Xamarin Studio)
 
 # Mono auto generated files
